@@ -1,6 +1,8 @@
 node_modules
 data
-uploads
+uploads/*
+!uploads/
+!uploads/ad38fe27-54cc-497b-933a-528b1d4fc5ea.png
 .git
 .env
 npm-debug.log*

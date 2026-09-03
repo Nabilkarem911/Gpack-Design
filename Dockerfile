@@ -4,7 +4,7 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY . .
-RUN mkdir -p /app/uploads && chown -R node:node /app
+RUN mkdir -p /app/uploads /app/seed && cp uploads/ad38fe27-54cc-497b-933a-528b1d4fc5ea.png /app/seed/ && chown -R node:node /app
 USER node
 EXPOSE 3000
 VOLUME ["/app/uploads"]

@@ -1,0 +1,21 @@
+# deps
+node_modules/
+
+# local dev data (SQLite migration source + runtime)
+data/
+
+# user uploads (runtime artifacts, seeded via seed/)
+uploads/
+
+# env
+.env
+.env.*
+
+# logs
+*.log
+npm-debug.log*
+
+# os
+.DS_Store
+Thumbs.db
+gpack-design.zip

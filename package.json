@@ -1,0 +1,31 @@
+{
+  "name": "gpack-design-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone G.PACK client and designer collaboration portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node --check server.js && node --check public/app.js",
+    "build": "npm run check",
+    "test": "node --test",
+    "db:migrate": "node -e \"require('./lib/db').migrate().then(()=>require('./lib/db').close())\"",
+    "db:migrate:sqlite": "node scripts/migrate-sqlite.js",
+    "admin:create": "node scripts/admin-create.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "multer": "^2.3.0",
+    "pg": "^8.23.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "better-sqlite3": "^11.10.0"
+  }
+}

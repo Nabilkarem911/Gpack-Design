@@ -1,0 +1,11 @@
+ALTER TABLE projects DROP CONSTRAINT IF EXISTS projects_status_check;
+ALTER TABLE projects ADD CONSTRAINT projects_status_check CHECK (status IN ('NEW','NEW_TASK','WAITING_FOR_DESIGNER','IN_DESIGN','WAITING_FOR_CLIENT','REVISION_REQUESTED','APPROVED','COMPLETED','CANCELLED'));
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS assigned_at timestamptz;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS started_at timestamptz;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS submitted_at timestamptz;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS approved_at timestamptz;
+CREATE TABLE IF NOT EXISTS design_options (id bigserial PRIMARY KEY, version_id bigint NOT NULL REFERENCES versions(id), name text NOT NULL, description text NOT NULL DEFAULT '', status text NOT NULL DEFAULT 'PROPOSED' CHECK(status IN ('PROPOSED','SELECTED','APPROVED','REJECTED')), created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(version_id,name));
+ALTER TABLE versions ADD COLUMN IF NOT EXISTS approved_option_id bigint REFERENCES design_options(id);
+ALTER TABLE files ADD COLUMN IF NOT EXISTS option_id bigint REFERENCES design_options(id);
+CREATE INDEX IF NOT EXISTS design_options_version_idx ON design_options(version_id);
+UPDATE projects SET status='NEW_TASK',assigned_at=COALESCE(assigned_at,updated_at) WHERE designer_id IS NOT NULL AND status='WAITING_FOR_DESIGNER';

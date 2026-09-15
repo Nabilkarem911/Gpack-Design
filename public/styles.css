@@ -5132,4 +5132,384 @@
   }
 }
 
+/* ==========================================================================
+   G.PACK CLIENT PORTAL UX POLISH
+   1. Sender-Based Chat Layout (Role Differentiation, RTL, Bubbles)
+   2. Design Options Selected State (Unmistakable Visual Feedback)
+   ========================================================================== */
+
+/* --- 1. CHAT REFINEMENTS --- */
+.messages {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scroll-behavior: smooth !important;
+}
+
+.client-conversation .messages {
+  height: 380px !important;
+  background: #FDFCFE !important;
+  border: 1px solid rgba(90, 61, 99, 0.08) !important;
+  border-radius: 18px !important;
+  padding: 16px 18px !important;
+  margin: 16px 0 !important;
+}
+
+/* Base message bubble */
+.message {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-width: 76% !important;
+  min-width: 90px !important;
+  padding: 10px 14px !important;
+  box-sizing: border-box !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.message-bubble-body {
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  text-align: right !important;
+}
+
+.message-meta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+  margin-top: 4px !important;
+}
+
+.message-time {
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  direction: ltr !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+}
+
+.message-sender-name {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  margin-bottom: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+/* --- CLIENT MESSAGES (Client side / Outgoing in Client Portal) --- */
+/* In RTL, align-self: flex-end positions on the LEFT side of the chat container */
+.message-client,
+.client-portal .message.message-mine,
+.client-portal .message.mine {
+  align-self: flex-end !important;
+  background: linear-gradient(135deg, #5A3D63 0%, #472D4F 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(90, 61, 99, 0.25) !important;
+  border-radius: 16px 16px 4px 16px !important;
+  box-shadow: 0 2px 8px rgba(90, 61, 99, 0.18) !important;
+}
+
+.message-client .message-time,
+.client-portal .message.message-mine .message-time,
+.client-portal .message.mine .message-time {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.message-client.is-consecutive,
+.client-portal .message.message-mine.is-consecutive,
+.client-portal .message.mine.is-consecutive {
+  border-radius: 16px 6px 6px 16px !important;
+  margin-top: -4px !important;
+}
+
+/* --- DESIGNER MESSAGES (Designer side / Incoming in Client Portal) --- */
+/* In RTL, align-self: flex-start positions on the RIGHT side of the chat container */
+.message-designer,
+.client-portal .message.message-theirs,
+.client-portal .message:not(.mine):not(.message-client) {
+  align-self: flex-start !important;
+  background: #FFFFFF !important;
+  color: #241C28 !important;
+  border: 1px solid rgba(90, 61, 99, 0.15) !important;
+  border-radius: 16px 16px 16px 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+.message-designer .message-sender-name,
+.client-portal .message:not(.mine):not(.message-client) .message-sender-name {
+  color: #5A3D63 !important;
+}
+
+.message-designer .message-time,
+.client-portal .message:not(.mine):not(.message-client) .message-time {
+  color: #8C8292 !important;
+}
+
+.message-designer.is-consecutive,
+.client-portal .message.message-theirs.is-consecutive,
+.client-portal .message:not(.mine):not(.message-client).is-consecutive {
+  border-radius: 6px 16px 16px 6px !important;
+  margin-top: -4px !important;
+}
+
+/* Internal Workspace mirror (Designer viewing): Designer is mine (flex-end), Client is incoming (flex-start) */
+.workspace-chat .message.message-client {
+  align-self: flex-start !important;
+  background: #FFFFFF !important;
+  color: #241C28 !important;
+  border: 1px solid rgba(90, 61, 99, 0.15) !important;
+  border-radius: 16px 16px 16px 4px !important;
+}
+.workspace-chat .message.message-client .message-time {
+  color: #8C8292 !important;
+}
+.workspace-chat .message.message-client .message-sender-name {
+  color: #5A3D63 !important;
+}
+.workspace-chat .message.message-designer {
+  align-self: flex-end !important;
+  background: linear-gradient(135deg, #5A3D63 0%, #472D4F 100%) !important;
+  color: #FFFFFF !important;
+  border-radius: 16px 16px 4px 16px !important;
+}
+.workspace-chat .message.message-designer .message-time {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* --- 2. DESIGN OPTIONS REFINEMENTS --- */
+.client-options {
+  border-top: 1px solid rgba(90, 61, 99, 0.1) !important;
+  padding-top: 20px !important;
+  margin-top: 22px !important;
+}
+
+.client-options .section-heading h3 {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #241C28 !important;
+  margin: 0 !important;
+}
+
+.option-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+  margin-top: 16px !important;
+}
+
+.option-card {
+  position: relative !important;
+  background: #FFFFFF !important;
+  border: 1.5px solid rgba(90, 61, 99, 0.14) !important;
+  border-radius: 18px !important;
+  padding: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+  user-select: none !important;
+}
+
+.option-card:hover:not(.is-selected) {
+  border-color: rgba(90, 61, 99, 0.32) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(90, 61, 99, 0.08) !important;
+}
+
+/* SELECTED STATE: Bold, unmistakably clear, SaaS aesthetic */
+.option-card.is-selected {
+  border-color: #5A3D63 !important;
+  border-width: 2px !important;
+  background: linear-gradient(180deg, #FAF7FB 0%, #FFFFFF 100%) !important;
+  box-shadow: 0 0 0 3px rgba(90, 61, 99, 0.14), 0 8px 24px rgba(90, 61, 99, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+.option-card.is-approved {
+  border-color: #1B8354 !important;
+  box-shadow: 0 0 0 3px rgba(27, 131, 84, 0.14), 0 8px 24px rgba(27, 131, 84, 0.1) !important;
+}
+
+/* Preview media */
+.option-preview {
+  position: relative !important;
+  width: 100% !important;
+  height: 155px !important;
+  background: #F7F4F9 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.option-preview img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transition: transform 0.25s ease !important;
+}
+
+.option-card:hover .option-preview img {
+  transform: scale(1.02) !important;
+}
+
+/* Floating Selected Badge */
+.option-selected-badge {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background: #5A3D63 !important;
+  color: #FFFFFF !important;
+  padding: 5px 11px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 3px 10px rgba(90, 61, 99, 0.35) !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+  animation: badgePop 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.option-card.is-approved .option-selected-badge {
+  background: #1B8354 !important;
+  box-shadow: 0 3px 10px rgba(27, 131, 84, 0.35) !important;
+}
+
+/* Option Card Body */
+.option-card-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.option-card-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.option-card-title {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #241C28 !important;
+}
+
+.option-selected-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: #5A3D63 !important;
+  flex-shrink: 0 !important;
+}
+
+.option-card.is-approved .option-selected-dot {
+  background: #1B8354 !important;
+}
+
+.option-card-status {
+  font-size: 11px !important;
+  color: #7A7080 !important;
+}
+
+.option-card.is-selected .option-card-status {
+  color: #5A3D63 !important;
+  font-weight: 700 !important;
+}
+
+.option-card.is-approved .option-card-status {
+  color: #1B8354 !important;
+  font-weight: 700 !important;
+}
+
+/* Card Action Buttons */
+.option-card-actions {
+  margin-top: auto !important;
+  padding-top: 4px !important;
+}
+
+.option-card-actions .btn {
+  width: 100% !important;
+  padding: 9px 12px !important;
+  border-radius: 11px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  transition: all 0.18s ease !important;
+}
+
+.btn-selected {
+  background: rgba(90, 61, 99, 0.1) !important;
+  color: #5A3D63 !important;
+  border: 1.5px solid rgba(90, 61, 99, 0.28) !important;
+  cursor: default !important;
+}
+
+.option-card.is-approved .btn-selected {
+  background: rgba(27, 131, 84, 0.1) !important;
+  color: #1B8354 !important;
+  border-color: rgba(27, 131, 84, 0.28) !important;
+}
+
+.btn-select-option {
+  background: #F7F4F9 !important;
+  color: #5A3D63 !important;
+  border: 1px solid rgba(90, 61, 99, 0.12) !important;
+}
+
+.btn-select-option:hover {
+  background: #5A3D63 !important;
+  color: #FFFFFF !important;
+  border-color: #5A3D63 !important;
+}
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 860px) {
+  .option-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .option-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .option-preview {
+    height: 180px !important;
+  }
+  .message {
+    max-width: 85% !important;
+  }
+  .client-conversation .messages {
+    height: 320px !important;
+    padding: 12px !important;
+  }
+}
+
+
 

@@ -2904,3 +2904,290 @@
   font-size: 10px;
   color: #786F7C;
 }
+
+
+/* ==========================================================================
+   G.PACK DESIGN PORTAL - PHASE 2 PROFESSIONAL POLISH
+   ========================================================================== */
+
+/* Unified Empty State Compact */
+.empty-state-compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 20px;
+  background: #FCFBFD;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  margin: 10px 0;
+}
+
+.empty-icon-pill {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #F2EBF7;
+  color: var(--gpack-purple);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.empty-state-compact h4 {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 4px 0;
+}
+
+.empty-state-compact p {
+  font-size: 12px;
+  color: #786F7C;
+  margin: 0;
+}
+
+.approved-empty-card {
+  max-width: 480px;
+  margin: 30px auto;
+  padding: 44px 24px;
+}
+
+/* Polished Notifications Center List */
+.notif-feed-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.notif-group {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(90, 61, 99, 0.03);
+}
+
+.notif-group-title {
+  background: #FAF8F5;
+  padding: 10px 18px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #786F7C;
+  border-bottom: 1px solid var(--line);
+  margin: 0;
+}
+
+.notif-group .notif-item {
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 18px;
+  box-shadow: none;
+  background: #ffffff;
+}
+
+.notif-group .notif-item:last-child {
+  border-bottom: 0;
+}
+
+.notif-group .notif-item:hover {
+  background: #FAF8F5;
+}
+
+.notif-group .notif-item.unread {
+  background: #FFFDF9;
+  border-right: 4px solid var(--gpack-gold);
+}
+
+.notif-content-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.notif-project-tag {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--gpack-purple);
+  background: #F2EBF7;
+  border-radius: 6px;
+  padding: 1px 7px;
+  margin-top: 4px;
+}
+
+/* Polished Account & Profile Settings */
+.account-settings-container {
+  max-width: 640px;
+  margin: 10px auto 40px auto;
+  width: 100%;
+}
+
+.account-profile-summary {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 2px 12px rgba(90, 61, 99, 0.03);
+  margin-bottom: 16px;
+}
+
+.account-avatar-large {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: #EAE1F0;
+  color: var(--gpack-purple);
+  font-size: 26px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.account-profile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-profile-meta h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.account-email-sub {
+  font-size: 12px;
+  color: #786F7C;
+}
+
+.account-card-modern {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(90, 61, 99, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-section-header h3 {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 3px 0;
+}
+
+.settings-section-header p {
+  font-size: 11.5px;
+  color: #786F7C;
+  margin: 0;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.settings-grid .field:first-child {
+  grid-column: 1 / -1;
+}
+
+.settings-actions {
+  margin-top: 4px;
+}
+
+.account-submit-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  border-radius: 10px;
+  background: var(--gpack-gold);
+  color: #33230C;
+  border: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.account-submit-btn:hover {
+  background: #F2B71D;
+}
+
+/* Polished Project List Card Alignment in "تصاميمي" */
+.project-list-card {
+  padding: 12px 18px;
+  gap: 16px;
+}
+
+.project-list-meta {
+  min-width: 160px;
+  max-width: 250px;
+}
+
+.project-list-parties .sep {
+  color: #C0B7C6;
+  margin: 0 4px;
+  font-size: 11px;
+}
+
+.project-list-time {
+  font-size: 11px;
+  color: #786F7C;
+  min-width: 85px;
+}
+
+/* Polished Workspace Top Header */
+.workspace-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(90, 61, 99, 0.03);
+}
+
+.workspace-top .workspace-title h1 {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 3px 0;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.35fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}

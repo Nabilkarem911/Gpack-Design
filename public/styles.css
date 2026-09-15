@@ -3771,10 +3771,107 @@
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: 0.9fr 1.35fr 1fr;
+  grid-template-columns: 0.85fr 1.35fr 1.15fr;
   gap: 16px;
   align-items: start;
 }
+
+.designer-options {
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 10px;
+}
+
+.designer-options-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: -4px 0 8px 0;
+  line-height: 1.3;
+}
+
+.designer-options-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin-bottom: 12px;
+}
+
+.designer-option-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 6px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.designer-option-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(90, 61, 99, 0.3);
+  box-shadow: 0 4px 12px rgba(90, 61, 99, 0.08);
+}
+
+.designer-option-card .option-preview {
+  width: 100%;
+  height: 72px;
+  border-radius: 6px;
+  background: #f7f3f8;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.designer-option-card .option-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.designer-option-card strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.designer-option-card small {
+  display: block;
+  font-size: 9.5px;
+  color: #786f7c;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.designer-option-card span {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--gpack-purple);
+  background: #f2ebf7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 1100px) {

@@ -4909,3 +4909,227 @@
   }
 }
 
+/* ==========================================================================
+   CLIENT PROJECT VIEW POLISH — FILES + ACTIVITY INTERNAL SCROLLING
+   ========================================================================== */
+.client-secondary {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+  margin-top: 24px !important;
+}
+
+.client-secondary-card {
+  background: #ffffff !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 18px !important;
+  padding: 18px 20px !important;
+  box-shadow: 0 2px 14px rgba(90, 61, 99, 0.03) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 380px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.client-secondary-card .client-card-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid var(--line) !important;
+  margin-bottom: 12px !important;
+  flex-shrink: 0 !important;
+  gap: 10px !important;
+}
+
+.client-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.client-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.client-card-sub {
+  font-size: 11px;
+  color: #786F7C;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.client-card-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  background: #F2EBF7;
+  color: var(--gpack-purple);
+  padding: 3px 10px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* Independent Card Scroll Areas */
+.client-card-scroll,
+.client-files-scroll,
+.client-brief-scroll,
+.client-activity-scroll {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  padding-left: 3px !important;
+}
+
+.client-card-scroll::-webkit-scrollbar,
+.client-files-scroll::-webkit-scrollbar,
+.client-brief-scroll::-webkit-scrollbar,
+.client-activity-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.client-card-scroll::-webkit-scrollbar-track,
+.client-files-scroll::-webkit-scrollbar-track,
+.client-brief-scroll::-webkit-scrollbar-track,
+.client-activity-scroll::-webkit-scrollbar-track {
+  background: #FAF8F5;
+  border-radius: 4px;
+}
+
+.client-card-scroll::-webkit-scrollbar-thumb,
+.client-files-scroll::-webkit-scrollbar-thumb,
+.client-brief-scroll::-webkit-scrollbar-thumb,
+.client-activity-scroll::-webkit-scrollbar-thumb {
+  background: #D8CBE1;
+  border-radius: 4px;
+}
+
+.client-card-scroll::-webkit-scrollbar-thumb:hover,
+.client-files-scroll::-webkit-scrollbar-thumb:hover,
+.client-brief-scroll::-webkit-scrollbar-thumb:hover,
+.client-activity-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--gpack-purple);
+}
+
+/* Files Panel Specifics in Client Portal */
+.client-files-tabs {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.client-files-tabs .files-tab-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.client-files-scroll {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brief Text Details */
+.client-brief-text {
+  font-size: 13px;
+  line-height: 1.9;
+  color: #433947;
+  margin: 0;
+  white-space: pre-wrap;
+  padding: 4px 2px;
+}
+
+/* Client Activity Timeline */
+.client-activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.client-activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s;
+}
+
+.client-activity-row:last-child {
+  border-bottom: 0;
+}
+
+.client-activity-row:hover {
+  background: #FCFBFD;
+}
+
+.client-activity-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.client-activity-icon.approval { background: #E7F5ED; color: var(--green); }
+.client-activity-icon.revision { background: #FFF0F0; color: var(--red); }
+.client-activity-icon.file { background: #EDF3FF; color: #3564B5; }
+.client-activity-icon.message { background: #FFF8E5; color: #D49B11; }
+.client-activity-icon.design { background: #F2EBF7; color: var(--gpack-purple); }
+
+.client-activity-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.client-activity-lead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.client-activity-action {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.client-activity-time {
+  font-size: 10px;
+  color: #786F7C;
+  flex-shrink: 0;
+}
+
+.client-activity-details {
+  font-size: 11px;
+  color: #786F7C;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive adjustments for Client Secondary Cards */
+@media (max-width: 992px) {
+  .client-secondary {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .client-secondary-card {
+    height: 320px !important;
+  }
+}
+
+

@@ -1,0 +1,4 @@
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'TEXT' CHECK (type IN ('TEXT', 'AUDIO'));
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS duration integer DEFAULT 0;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_id bigint REFERENCES files(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS messages_file_idx ON messages(file_id) WHERE file_id IS NOT NULL;

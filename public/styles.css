@@ -6136,3 +6136,524 @@
     flex-shrink: 0 !important;
   }
 }
+
+
+/* ==========================================================================
+   PRODUCTION-READY CHAT ATTACHMENTS - G.PACK DESIGN PORTAL
+   ========================================================================== */
+
+/* 1. Attachment Button in Composer */
+.attach-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: #f4f4f7;
+  color: #555567;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.attach-button:hover {
+  background: #ede8f2;
+  color: var(--purple, #5A3D63);
+  transform: scale(1.04);
+}
+
+.attach-button:active {
+  transform: scale(0.96);
+}
+
+.attach-button:focus-visible {
+  outline: 2px solid var(--purple, #5A3D63);
+  outline-offset: 2px;
+}
+
+/* 2. Composer Attachment Preview Popup */
+.composer,
+.client-composer {
+  position: relative;
+}
+
+.attachment-preview {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 8px;
+  left: 8px;
+  background: #ffffff;
+  border: 1px solid #e5dbe9;
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 12px 28px -6px rgba(90, 61, 99, 0.16), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  z-index: 30;
+  animation: attachSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes attachSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.attachment-preview.hidden {
+  display: none !important;
+}
+
+.attachment-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.attachment-preview-thumb-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #f4f4f6;
+  border: 1px solid #ebe5ee;
+  flex-shrink: 0;
+}
+
+.attachment-preview-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.attachment-preview-file-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 9px;
+  background: #f2ebf7;
+  color: var(--purple, #5A3D63);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  border: 1px solid #e5d8eb;
+}
+
+.attachment-preview-ext-badge {
+  font-size: 8.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--purple, #5A3D63);
+  color: #fff;
+  padding: 1px 3px;
+  border-radius: 3px;
+  margin-top: 1px;
+  line-height: 1;
+}
+
+.attachment-preview-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attachment-preview-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b232e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-preview-size {
+  font-size: 11.5px;
+  color: #7a7080;
+}
+
+.attachment-preview-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f4f3f6;
+  color: #655869;
+  border: 0;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.attachment-preview-remove:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  transform: scale(1.08);
+}
+
+/* 3. Image Message Bubble */
+.message-image-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.message-image-wrap {
+  position: relative;
+  max-width: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  border: 1px solid rgba(90, 61, 99, 0.12);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.message-image-wrap:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(90, 61, 99, 0.18);
+}
+
+.message-chat-image {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  display: block;
+  border-radius: 11px;
+}
+
+.message-image-zoom-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--purple, #5A3D63);
+  border: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.message-image-wrap:hover .message-image-zoom-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 4. File Message Bubble */
+.message-file-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.message-file-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(90, 61, 99, 0.16);
+  min-width: 210px;
+  max-width: 320px;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04);
+}
+
+.message-mine .message-file-card {
+  background: #ffffff;
+  border-color: rgba(90, 61, 99, 0.2);
+}
+
+.message-theirs .message-file-card {
+  background: #ffffff;
+  border-color: #e5dde8;
+}
+
+.message-file-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(90, 61, 99, 0.14);
+  border-color: var(--purple, #5A3D63);
+}
+
+.message-file-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  background: #f2ebf7;
+  color: var(--purple, #5A3D63);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  border: 1px solid #e2d6ea;
+}
+
+.message-file-ext-tag {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--purple, #5A3D63);
+  color: #ffffff;
+  padding: 1px 3px;
+  border-radius: 3px;
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  line-height: 1;
+}
+
+.message-file-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.message-file-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f1b22;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-file-size {
+  font-size: 11px;
+  color: #776e7c;
+}
+
+.message-file-action {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f2ebf7;
+  color: var(--purple, #5A3D63);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.message-file-card:hover .message-file-action {
+  background: var(--purple, #5A3D63);
+  color: #ffffff;
+  transform: scale(1.06);
+}
+
+.message-attachment-caption {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: inherit;
+  padding: 2px 4px 0;
+  word-break: break-word;
+}
+
+/* 5. Project Files Source Badge */
+.file-source-badge.chat-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #f3ecf7;
+  color: var(--purple, #5A3D63);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 12px;
+  border: 1px solid #e3d5ea;
+  vertical-align: middle;
+}
+
+/* 6. Image Lightbox Modal */
+.chat-image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.chat-image-lightbox.hidden {
+  display: none !important;
+}
+
+.chat-image-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 10, 20, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.chat-image-lightbox-content {
+  position: relative;
+  z-index: 1;
+  max-width: 92vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  background: #18141d;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  animation: lightboxPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes lightboxPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.chat-image-lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: #221c28;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 14px;
+}
+
+.chat-image-lightbox-title {
+  color: #f1edfa;
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: ltr;
+  text-align: right;
+}
+
+.chat-image-lightbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.chat-image-lightbox-download,
+.chat-image-lightbox-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.chat-image-lightbox-download:hover,
+.chat-image-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.05);
+}
+
+.chat-image-lightbox-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow: auto;
+  max-height: calc(90vh - 70px);
+}
+
+.chat-image-lightbox-img {
+  max-width: 100%;
+  max-height: calc(85vh - 80px);
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* 7. Mobile Responsiveness */
+@media (max-width: 640px) {
+  .message-image-wrap {
+    max-width: 230px;
+  }
+
+  .message-file-card {
+    max-width: 250px;
+    padding: 8px 10px;
+    gap: 10px;
+  }
+
+  .message-file-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .message-file-name {
+    font-size: 12px;
+  }
+
+  .attachment-preview {
+    right: 4px;
+    left: 4px;
+    padding: 8px 10px;
+  }
+
+  .attachment-preview-thumb-wrap,
+  .attachment-preview-file-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .chat-image-lightbox {
+    padding: 8px;
+  }
+
+  .chat-image-lightbox-content {
+    max-width: 98vw;
+    max-height: 96vh;
+  }
+}
+
+@media (max-width: 390px) {
+  .message-image-wrap {
+    max-width: 190px;
+  }
+
+  .message-file-card {
+    max-width: 210px;
+  }
+}

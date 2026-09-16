@@ -7030,3 +7030,209 @@
   }
 }
 
+
+/* Structured Chat Message Cards */
+.chat-structured-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin: 4px 0;
+  text-align: right;
+}
+.chat-structured-revision {
+  background: #fdf2f2;
+  border: 1.5px solid #fecaca;
+  color: #991b1b;
+}
+.chat-structured-approval {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  color: #166534;
+}
+.chat-structured-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #991b1b;
+  margin-bottom: 6px;
+}
+.chat-structured-badge.approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+.chat-structured-title {
+  font-size: 14px;
+  font-weight: 800;
+  display: block;
+  margin-bottom: 6px;
+  color: inherit;
+}
+.chat-structured-notes {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #374151;
+  background: rgba(255,255,255,0.7);
+  padding: 8px 10px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Option Cards and Badges */
+.client-opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: right;
+  position: relative;
+}
+.client-opt-btn:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+.client-opt-btn.is-active {
+  border-color: var(--purple, #5A3D63);
+  background: #fbf9fc;
+  box-shadow: 0 4px 14px rgba(90, 61, 99, 0.12);
+}
+.client-opt-btn.is-approved {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+.client-opt-badge-pill {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--purple, #5A3D63);
+  color: #ffffff;
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.client-opt-badge-pill.approved {
+  background: #10b981;
+}
+
+/* Post-Closure Rating Form */
+.review-form-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+}
+.rating-stars-group {
+  display: inline-flex;
+  gap: 8px;
+  direction: ltr;
+  margin: 12px 0 16px;
+}
+.star-btn {
+  background: transparent;
+  border: 0;
+  font-size: 36px;
+  color: #d1d5db;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+.star-btn:hover, .star-btn.active {
+  color: #f59e0b;
+  transform: scale(1.15);
+}
+.review-comment-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.review-comment-textarea:focus {
+  border-color: var(--purple, #5A3D63);
+}
+.btn-submit-review {
+  background: var(--purple, #5A3D63);
+  color: #ffffff;
+  border: 0;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-submit-review:hover {
+  background: #462c4e;
+  transform: translateY(-1px);
+}
+.submitted-review-box {
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 18px 22px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+.submitted-stars {
+  font-size: 26px;
+  color: #f59e0b;
+  margin-bottom: 6px;
+  display: block;
+}
+.submitted-comment {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 8px 0 0;
+  font-style: italic;
+}
+
+/* Modal Confirmation for Approval & Revision */
+.portal-confirm-modal {
+  text-align: center;
+  padding: 10px 0;
+}
+.portal-confirm-icon {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+.portal-confirm-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink, #1f2937);
+  margin-bottom: 8px;
+}
+.portal-confirm-desc {
+  font-size: 14px;
+  color: var(--muted, #6b7280);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.portal-confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+`;
+
+if (!css.includes('chat-structured-card')) {
+  fs.writeFileSync(cssPath, css + extraCss, 'utf8');
+  console.log('Appended extra styles successfully');
+} else {
+  console.log('Already has extra styles')

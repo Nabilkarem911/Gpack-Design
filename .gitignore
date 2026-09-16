@@ -19,3 +19,6 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 gpack-design.zip
+scratch/
+scripts/test_*.js
+*.png

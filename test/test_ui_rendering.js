@@ -116,3 +116,24 @@ test('client previous versions bar renders all versions V1..V7 with interactive 
   assert.ok(htmlV3.includes('V3</span><span class="version-chip-sep">·</span><span class="version-chip-status">سابقة</span>'));
   assert.ok(!htmlV3.includes('class="version-chip active is-selected " onclick="selectClientVersion(7)"'), 'V7 must not be active when V3 is selected');
 });
+
+test('client portal HTML has NO standalone design cards/options/preview and renders in-chat design bubbles', () => {
+  const fs = require('fs');
+  const appCode = fs.readFileSync('public/app.js', 'utf8');
+
+  // Verify clientPortalView template string does NOT contain removed sections
+  assert.ok(!appCode.includes('class="client-design-card"'), 'Must NOT have client-design-card');
+  assert.ok(!appCode.includes('class="design-options-selector"'), 'Must NOT have design-options-selector');
+  assert.ok(!appCode.includes('class="design-card-main-preview'), 'Must NOT have standalone design-card-main-preview');
+  assert.ok(!appCode.includes('خيارات التصميم المتاحة'), 'Must NOT have standalone options header');
+
+  // Verify chat is primary
+  assert.ok(appCode.includes('class="client-conversation whatsapp-chat-experience"'), 'Chat must be primary WhatsApp experience');
+  assert.ok(appCode.includes('message-design-bubble'), 'Must support message-design-bubble');
+  assert.ok(appCode.includes('openDesignLightbox'), 'Must support openDesignLightbox');
+  assert.ok(appCode.includes('openRevisionDialog'), 'Must support openRevisionDialog');
+  assert.ok(appCode.includes('openApproveDialog'), 'Must support openApproveDialog');
+  assert.ok(appCode.includes('طلب تعديل — '), 'Must support structured revision format');
+  assert.ok(appCode.includes('تم اعتماد التصميم — '), 'Must support structured approval format');
+});
+

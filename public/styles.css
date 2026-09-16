@@ -6700,3 +6700,333 @@
   color: #831843;
   margin-bottom: 4px;
 }
+
+/* ==========================================================================
+   CLIENT EXPERIENCE REDESIGN & WHATSAPP-STYLE CHAT
+   ========================================================================== */
+.client-redesign {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+/* Header */
+.client-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+.client-nav-header .brand-logo-img {
+  width: 90px;
+  height: 52px;
+  object-fit: contain;
+}
+.client-header-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+.client-header-user .user-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.client-header-user .user-display-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* Project Hero Bar */
+.client-project-banner {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(90, 61, 99, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.client-project-titles h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.client-project-titles p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+.client-project-status-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Main Design Stage Card */
+.client-design-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 30px rgba(90, 61, 99, 0.06);
+  margin-bottom: 24px;
+}
+.design-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.design-identity-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.design-identity-title h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--purple);
+}
+.design-card-main-preview {
+  min-height: 400px;
+  max-height: 600px;
+  background: #f8f6f9;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 20px;
+}
+.design-card-main-preview img {
+  max-width: 100%;
+  max-height: 580px;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.design-card-main-preview img:hover {
+  transform: scale(1.01);
+}
+
+/* Design Options Selector Grid */
+.design-options-selector {
+  margin-bottom: 20px;
+}
+.design-options-selector-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: block;
+}
+.design-options-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.client-opt-btn {
+  background: #ffffff;
+  border: 2px solid #e8e4eb;
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: right;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.client-opt-btn:hover {
+  border-color: #c9bed1;
+  background: #faf8fb;
+}
+.client-opt-btn.is-active {
+  border-color: var(--purple);
+  background: #fbf9fc;
+  box-shadow: 0 4px 15px rgba(90, 61, 99, 0.1);
+}
+.client-opt-btn.is-approved {
+  border-color: var(--green);
+  background: #f0fdf4;
+}
+.client-opt-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #bbb;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.client-opt-btn.is-active .client-opt-radio {
+  border-color: var(--purple);
+  background: var(--purple);
+}
+.client-opt-btn.is-active .client-opt-radio::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+.client-opt-label {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink);
+  flex: 1;
+}
+
+/* Primary Action Bar */
+.client-decision-bar {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #fcfbfe;
+  border: 1px solid #efeaf2;
+  border-radius: 16px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+.btn-client-revision {
+  background: #ffffff;
+  color: #c94747;
+  border: 1.5px solid #fecaca;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.btn-client-revision:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+}
+.btn-client-approve {
+  background: var(--gpack-gold);
+  color: #3b2c05;
+  border: 1.5px solid #f5b914;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(255, 196, 43, 0.25);
+  transition: all 0.2s;
+}
+.btn-client-approve:hover {
+  background: #f5b914;
+  transform: translateY(-1px);
+}
+
+/* Unified Project Files */
+.client-unified-files-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(90, 61, 99, 0.04);
+}
+.unified-files-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.unified-files-head h3 {
+  font-size: 17px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Post-Closure Thank You & Rating Card */
+.client-closed-feedback-card {
+  background: linear-gradient(135deg, #fbf7fe 0%, #f7f0fc 100%);
+  border: 2px solid #DFCDE8;
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 30px rgba(90, 61, 99, 0.08);
+}
+.client-closed-feedback-card .heart-icon {
+  font-size: 38px;
+  margin-bottom: 8px;
+  display: block;
+}
+.client-closed-feedback-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--purple);
+  margin: 0 0 8px;
+}
+.client-closed-feedback-card p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+.rating-stars-group {
+  display: inline-flex;
+  gap: 8px;
+  direction: ltr;
+  margin-bottom: 16px;
+}
+.star-btn {
+  background: transparent;
+  border: 0;
+  font-size: 32px;
+  color: #d1d5db;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.star-btn.active, .star-btn:hover {
+  color: #f59e0b;
+}
+
+@media (max-width: 768px) {
+  .client-redesign {
+    padding: 16px 12px 60px;
+  }
+  .client-project-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .client-decision-bar {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-client-revision, .btn-client-approve {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

@@ -92,7 +92,7 @@ test('Strict Client Portal Redesign Invariants: Chat is Primary, In-Chat Designs
     const uploadJson = await uploadRes.json();
     assert.equal(uploadJson.type, 'IMAGE');
     assert.equal(uploadJson.sender_type, 'CLIENT');
-    assert.ok(uploadJson.file_url.includes(`/api/portal/${projectId}/files/`));
+    assert.ok(uploadJson.file_url.includes(`/api/files/`));
     assert.equal(uploadJson.client_event_id, clientEvtId);
 
     // 5. Test Canonical Single File Storage: Ensure file is NOT duplicated

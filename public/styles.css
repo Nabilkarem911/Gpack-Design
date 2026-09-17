@@ -7701,3 +7701,261 @@
   border-radius: 12px;
   border: 1px dashed #e7e0ec;
 }
+
+/* ==========================================================================
+   Customer Design Review Workflow - Review State Machine & Voice Notes
+   ========================================================================== */
+
+/* Revision Voice Note in Modal */
+.revision-modal-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.revision-voice-section {
+  background: #fdfaf7;
+  border: 1px dashed #e8d9cb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.revision-voice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.revision-voice-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #4a3b32;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-revision-record {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #dcd1c6;
+  color: #3b2d22;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-revision-record:hover {
+  background: #faf4ef;
+  border-color: #cbb8a6;
+}
+
+.btn-revision-record .mic-dot {
+  width: 8px;
+  height: 8px;
+  background: #dc2626;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.revision-voice-live {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  padding: 8px 14px;
+}
+
+.rev-voice-timer {
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 14px;
+  color: #991b1b;
+}
+
+.revision-voice-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #e2d9cf;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.rev-preview-track-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rev-preview-track {
+  height: 5px;
+  background: #f1ede8;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.rev-preview-fill {
+  height: 100%;
+  background: var(--purple, #6b21a8);
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.rev-preview-time {
+  font-size: 11px;
+  font-family: monospace;
+  color: #78716c;
+}
+
+/* Design Bubble Status Banners (Customer UI) */
+.design-bubble-revision-notice {
+  margin-top: 12px;
+  background: #fffbf5;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.revision-notice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.revision-notice-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 3px 10px;
+  border-radius: 16px;
+}
+
+.revision-notice-status {
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.revision-notice-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #374151;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-right: 3px solid #f59e0b;
+}
+
+.revision-notice-voice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #f3ebe1;
+}
+
+.revision-notice-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.design-bubble-approved-notice {
+  margin-top: 12px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.approved-notice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.approved-notice-badge {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #166534;
+  background: #dcfce7;
+  padding: 3px 10px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.approved-notice-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Chat Structured Revision Card */
+.chat-structured-revision {
+  border-right: 4px solid #ef4444 !important;
+  background: #fffcfc !important;
+}
+
+.chat-structured-badge.revision-badge {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  font-weight: 800 !important;
+}
+
+.chat-structured-label {
+  font-weight: 700;
+  color: #4b5563;
+  margin-left: 4px;
+}
+
+.chat-structured-voice-wrap {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-structured-voice-wrap .message-voice-bubble {
+  margin-top: 2px;
+  background: #ffffff;
+}
+
+.file-source-revision {
+  background: #fdf2f8 !important;
+  color: #9d174d !important;
+  border: 1px solid #fbcfe8 !important;
+}

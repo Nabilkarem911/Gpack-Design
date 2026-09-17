@@ -122,8 +122,8 @@ test('Strict Client Portal Redesign Invariants: Chat is Primary, In-Chat Designs
     assert.ok(msgsAfterRev.body.includes('طلب تعديل — الخيار A — الإصدار V1'), 'Chat message must contain exact structured header');
     assert.ok(msgsAfterRev.body.includes('ملاحظات العميل:'), 'Chat message must contain notes header');
 
-    // 7. Test Design Approval on Option B
-    const appRes = await fetch(`${BASE_URL}/api/portal/${projectId}/approve`, {
+    // 7. Verify Invariant: Cannot approve V1 after revision requested (must return 409 Conflict)
+    const conflictAppRes = await fetch(`${BASE_URL}/api/portal/${projectId}/approve`, {
       method: 'POST',
       headers: { 'Cookie': portalCookie, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -131,19 +131,37 @@ test('Strict Client Portal Redesign Invariants: Chat is Primary, In-Chat Designs
         option_id: optionBId
       })
     });
-    assert.equal(appRes.status, 200, 'Design approval must succeed');
+    assert.equal(conflictAppRes.status, 409, 'Approving revision-requested version must be rejected with 409');
 
-    // Verify DB approved state
-    const verRow = (await pool.query('SELECT * FROM versions WHERE id=$1', [versionId])).rows[0];
+    // Designer uploads V2 with Option B for new review cycle
+    const v2Res = await pool.query("INSERT INTO versions(project_id, number, status) VALUES($1, 2, 'PENDING') RETURNING id", [projectId]);
+    const v2Id = v2Res.rows[0].id;
+    const optB2Res = await pool.query("INSERT INTO design_options(version_id, name) VALUES($1, 'الخيار B') RETURNING id", [v2Id]);
+    const optB2Id = optB2Res.rows[0].id;
+    await pool.query("UPDATE projects SET status='WAITING_FOR_CLIENT' WHERE id=$1", [projectId]);
+
+    // Client approves V2 Option B
+    const appRes = await fetch(`${BASE_URL}/api/portal/${projectId}/approve`, {
+      method: 'POST',
+      headers: { 'Cookie': portalCookie, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        version_id: v2Id,
+        option_id: optB2Id
+      })
+    });
+    assert.equal(appRes.status, 200, 'Design approval on V2 must succeed');
+
+    // Verify DB approved state on V2
+    const verRow = (await pool.query('SELECT * FROM versions WHERE id=$1', [v2Id])).rows[0];
     assert.equal(verRow.status, 'APPROVED');
-    assert.equal(verRow.approved_option_id, optionBId);
+    assert.equal(verRow.approved_option_id, optB2Id);
 
-    const optBRow = (await pool.query('SELECT * FROM design_options WHERE id=$1', [optionBId])).rows[0];
+    const optBRow = (await pool.query('SELECT * FROM design_options WHERE id=$1', [optB2Id])).rows[0];
     assert.equal(optBRow.status, 'APPROVED');
 
     // Verify chat message created for approval
     const msgsAfterApp = (await pool.query('SELECT * FROM messages WHERE project_id=$1 ORDER BY id DESC LIMIT 1', [projectId])).rows[0];
-    assert.ok(msgsAfterApp.body.includes('تم اعتماد التصميم — الخيار B — الإصدار V1 ✅'), 'Chat message must contain exact approved header');
+    assert.ok(msgsAfterApp.body.includes('تم اعتماد التصميم — الخيار B — الإصدار V2 ✅'), 'Chat message must contain exact approved header');
 
     // 8. Test Invariant: Manager/Designer CANNOT close without client approval
     // (Create unapproved project and test rejection)

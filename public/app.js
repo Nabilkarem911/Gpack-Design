@@ -223,7 +223,7 @@ function renderWorkspaceFileRow(f) {
   const iconHtml = info.isImage
     ? `<div class="file-thumb-mini-wrap"><img src="/api/files/${f.id}" alt="${esc(f.original_name)}" class="file-thumb-mini" loading="lazy"></div>`
     : `<div class="file-icon-badge ${info.badgeClass}"><span>${info.type}</span></div>`;
-  return `<div class="compact-file-row"><div class="file-row-main">${iconHtml}<div class="file-row-details"><span class="file-row-name" title="${esc(f.original_name)}">${esc(f.original_name)}</span><span class="file-row-sub">${info.type} • ${fmtFileSize(f.size)}${f.message_id ? ' • <span class="file-source-badge chat-source">من المحادثة</span>' : ''}</span></div></div><div class="file-row-actions"><a href="/api/files/${f.id}" target="_blank" class="file-action-link" title="فتح الملف">فتح</a><a href="/api/files/${f.id}" download="${esc(f.original_name)}" class="file-download-btn" title="تنزيل">⤓</a></div></div>`;
+  return `<div class="compact-file-row"><div class="file-row-main">${iconHtml}<div class="file-row-details"><span class="file-row-name" title="${esc(displayName)}">${esc(displayName)}</span><span class="file-row-sub">${info.type} • ${fmtFileSize(f.size)}${f.message_id ? ' • <span class="file-source-badge chat-source">من المحادثة</span>' : ''}</span></div></div><div class="file-row-actions"><a href="/api/files/${f.id}" target="_blank" class="file-action-link" title="فتح الملف">فتح</a><a href="/api/files/${f.id}" download="${esc(f.original_name)}" class="file-download-btn" title="تنزيل">⤓</a></div></div>`;
 }
 
 function renderWorkspaceFilesList(files, activeTab) {
@@ -302,6 +302,11 @@ async function openProject(id,pushRoute=true){closeStream();state.activeProjectI
     stored_name: m.stored_name || (m.file ? m.file.stored_name : ''),
     mime: mime,
     file_size: fileSize,
+    revision_id: m.revision_id ? Number(m.revision_id) : null,
+    version_id: m.version_id ? Number(m.version_id) : null,
+    option_id: m.option_id ? Number(m.option_id) : null,
+    version_number: m.version_number ? Number(m.version_number) : null,
+    option_name: m.option_name || null,
     created_at: m.created_at || new Date().toISOString(),
     client_event_id: m.client_event_id || null
   };
@@ -320,8 +325,48 @@ window.setClientFilesTab = function(tab) {
 
 function appendMessage(rawM){
 const m=normalizeMessage(rawM);if(!m)return;
-const container=$('#messages');if(!container||!m)return;if(m.id&&container.querySelector(`[data-id="${m.id}"]`))return;if(m.client_event_id&&container.querySelector(`[data-event-id="${m.client_event_id}"]`))return;const lastEl=container.lastElementChild,prevSenderType=lastEl?.dataset?.senderType,isConsecutive=prevSenderType===m.sender_type,inPortal=!!state.portal,isClient=m.sender_type==='CLIENT',isMine=inPortal?isClient:((state.user&&m.sender_type===state.user.role)||(state.user&&state.user.role==='ADMIN'&&(m.sender_type==='ADMIN'||m.sender_type==='DESIGNER'))||(!state.user&&!isClient));let senderLabel='';if(!isMine&&!isConsecutive){if(inPortal){senderLabel=m.sender_type==='ADMIN'?'إدارة G.PACK':(m.sender_name?`المصمم · ${m.sender_name}`:'المصمم')}else{senderLabel=m.sender_name?`العميل · ${m.sender_name}`:'العميل'}}const timeFormatted=m.created_at?new Date(m.created_at).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'';const el=document.createElement('div');el.className=`message ${isClient?'message-client':'message-designer'} ${isMine?'message-mine mine':'message-theirs theirs'} ${isConsecutive?'is-consecutive':''} ${m.type==='AUDIO'?'message-voice':''} ${m.type==='IMAGE'?'message-image':''} ${m.type==='FILE'?'message-file':''}`;el.dataset.senderType=m.sender_type;if(m.id)el.dataset.id=m.id;if(m.client_event_id)el.dataset.eventId=m.client_event_id;let contentHtml='';if(m.type==='AUDIO'){const durStr=formatAudioTime(m.duration||0);const audioUrl=m.file_url||(m.file_id?`/api/files/${m.file_id}`:'');contentHtml=`<div class="message-voice-bubble" data-url="${esc(audioUrl)}"><button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي"><svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg class="icon-pause hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button><div class="voice-bubble-main"><div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div><div class="voice-seek-thumb" style="left:0%"></div></div><div class="voice-bubble-meta"><span class="voice-bubble-time">0:00 / ${durStr}</span><span class="voice-mic-icon" title="رسالة صوتية"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></span></div></div><audio preload="metadata" src="${esc(audioUrl)}"></audio></div>`}else if(m.type==='IMAGE'){const imgUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');const fileName=m.original_name||m.body||'صورة';const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;contentHtml='<div class="message-image-bubble"><div class="message-image-wrap" data-img-url="'+esc(imgUrl)+'" data-img-name="'+esc(fileName)+'"><img src="'+esc(imgUrl)+'" alt="'+esc(fileName)+'" class="message-chat-image" loading="lazy"/><button type="button" class="message-image-zoom-btn" aria-label="تكبير الصورة"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button></div>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>'}else if(m.type==='FILE'){const fileUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');const fileName=m.original_name||m.body||'ملف مرفق';const sizeStr=m.file_size?(m.file_size>1024*1024?(m.file_size/(1024*1024)).toFixed(1)+' MB':Math.ceil(m.file_size/1024)+' KB'):'';const ext=fileName.includes('.')?fileName.split('.').pop().toUpperCase():'FILE';const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;contentHtml='<div class="message-file-bubble"><a href="'+esc(fileUrl)+'" target="_blank" download="'+esc(fileName)+'" class="message-file-card"><div class="message-file-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="message-file-ext-tag">'+esc(ext.slice(0,4))+'</span></div><div class="message-file-info"><span class="message-file-name" title="'+esc(fileName)+'">'+esc(fileName)+'</span>'+(sizeStr?'<span class="message-file-size">'+esc(sizeStr)+'</span>':'')+'</div><div class="message-file-action" title="تحميل"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div></a>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>'}else{const bodyText=m.body||'';
-if(bodyText.startsWith('طلب تعديل — ') || bodyText.startsWith('طلب تعديل [')){
+const container=$('#messages');if(!container||!m)return;if(m.id&&container.querySelector(`[data-id="${m.id}"]`))return;if(m.client_event_id&&container.querySelector(`[data-event-id="${m.client_event_id}"]`))return;const lastEl=container.lastElementChild,prevSenderType=lastEl?.dataset?.senderType,isConsecutive=prevSenderType===m.sender_type,inPortal=!!state.portal,isClient=m.sender_type==='CLIENT',isMine=inPortal?isClient:((state.user&&m.sender_type===state.user.role)||(state.user&&state.user.role==='ADMIN'&&(m.sender_type==='ADMIN'||m.sender_type==='DESIGNER'))||(!state.user&&!isClient));let senderLabel='';if(!isMine&&!isConsecutive){if(inPortal){senderLabel=m.sender_type==='ADMIN'?'إدارة G.PACK':(m.sender_name?`المصمم · ${m.sender_name}`:'المصمم')}else{senderLabel=m.sender_name?`العميل · ${m.sender_name}`:'العميل'}}const timeFormatted=m.created_at?new Date(m.created_at).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'';const el=document.createElement('div');el.className=`message ${isClient?'message-client':'message-designer'} ${isMine?'message-mine mine':'message-theirs theirs'} ${isConsecutive?'is-consecutive':''} ${m.type==='AUDIO'?'message-voice':''} ${m.type==='IMAGE'?'message-image':''} ${m.type==='FILE'?'message-file':''}`;el.dataset.senderType=m.sender_type;if(m.id)el.dataset.id=m.id;if(m.client_event_id)el.dataset.eventId=m.client_event_id;let contentHtml='';if(m.type==='REVISION'||m.revision_id){const optTitle=m.option_name?formatOptionName(m.option_name):'التصميم';const verTitle=m.version_number?` — الإصدار V${m.version_number}`:'';const cardTitle=`${optTitle}${verTitle}`;const notesText=m.body&&!m.body.startsWith('طلب تعديل')&&m.body!=='تعليق صوتي'?m.body:(m.body&&m.body.includes('ملاحظات العميل: ')&&!m.body.includes('تعليق صوتي مرفق')?m.body.split('ملاحظات العميل: ')[1]:'');const audioUrl=m.file_url||(m.file_id?`/api/files/${m.file_id}`:'');const durStr=formatAudioTime(m.duration||0);contentHtml=`<div class="chat-structured-card chat-structured-revision" data-revision-request-id="${esc(m.revision_id||'')}" data-version-id="${esc(m.version_id||'')}" data-design-option-id="${esc(m.option_id||'')}"><div class="chat-structured-header"><span class="chat-structured-badge revision-badge">🔴 طلب تعديل</span><strong class="chat-structured-title">${esc(cardTitle)}</strong></div>${notesText?`<div class="chat-structured-notes"><span class="chat-structured-label">الملاحظات:</span><p>${esc(notesText)}</p></div>`:''}${audioUrl?`<div class="chat-structured-voice-wrap" data-url="${esc(audioUrl)}"><div class="chat-structured-voice-label">🎙️ تعليق صوتي مرفق</div><div class="message-voice-bubble" data-url="${esc(audioUrl)}"><button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي"><svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg class="icon-pause hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button><div class="voice-bubble-main"><div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div><div class="voice-seek-thumb" style="left:0%"></div></div><div class="voice-bubble-meta"><span class="voice-bubble-time">0:00 / ${durStr}</span><span class="voice-mic-icon" title="رسالة صوتية"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></span></div></div><audio preload="metadata" src="${esc(audioUrl)}"></audio></div></div>`:''}<div class="chat-structured-footer"><span class="chat-structured-time">${timeFormatted}</span></div></div>`;}else if(m.type==='AUDIO'){const durStr=formatAudioTime(m.duration||0);const audioUrl=m.file_url||(m.file_id?`/api/files/${m.file_id}`:'');contentHtml=`<div class="message-voice-bubble" data-url="${esc(audioUrl)}"><button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي"><svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg class="icon-pause hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button><div class="voice-bubble-main"><div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div><div class="voice-seek-thumb" style="left:0%"></div></div><div class="voice-bubble-meta"><span class="voice-bubble-time">0:00 / ${durStr}</span><span class="voice-mic-icon" title="رسالة صوتية"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></span></div></div><audio preload="metadata" src="${esc(audioUrl)}"></audio></div>`}else if(m.type==='IMAGE'){const imgUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');const fileName=m.original_name||m.body||'صورة';const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;contentHtml='<div class="message-image-bubble"><div class="message-image-wrap" data-img-url="'+esc(imgUrl)+'" data-img-name="'+esc(fileName)+'"><img src="'+esc(imgUrl)+'" alt="'+esc(fileName)+'" class="message-chat-image" loading="lazy"/><button type="button" class="message-image-zoom-btn" aria-label="تكبير الصورة"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button></div>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>'}else if(m.type==='FILE'){const fileUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');const fileName=m.original_name||m.body||'ملف مرفق';const sizeStr=m.file_size?(m.file_size>1024*1024?(m.file_size/(1024*1024)).toFixed(1)+' MB':Math.ceil(m.file_size/1024)+' KB'):'';const ext=fileName.includes('.')?fileName.split('.').pop().toUpperCase():'FILE';const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;contentHtml='<div class="message-file-bubble"><a href="'+esc(fileUrl)+'" target="_blank" download="'+esc(fileName)+'" class="message-file-card"><div class="message-file-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="message-file-ext-tag">'+esc(ext.slice(0,4))+'</span></div><div class="message-file-info"><span class="message-file-name" title="'+esc(fileName)+'">'+esc(fileName)+'</span>'+(sizeStr?'<span class="message-file-size">'+esc(sizeStr)+'</span>':'')+'</div><div class="message-file-action" title="تحميل"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div></a>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>'}else{const bodyText=m.body||'';
+if(m.type==='REVISION'){
+  const optTitle=m.option_name?formatOptionName(m.option_name):'التصميم';
+  const verTitle=m.version_number?` — الإصدار V${m.version_number}`:'';
+  const cardTitle=`${optTitle}${verTitle}`;
+  const notesText=m.body&&m.body!=='تعليق صوتي'&&m.body!=='طلب تعديل'?m.body:'';
+  const audioUrl=m.file_url||(m.file_id?`/api/files/${m.file_id}`:'');
+  const durStr=formatAudioTime(m.duration||0);
+  contentHtml=`
+    <div class="chat-structured-card chat-structured-revision" 
+         data-revision-request-id="${esc(m.revision_id||'')}"
+         data-version-id="${esc(m.version_id||'')}"
+         data-design-option-id="${esc(m.option_id||'')}">
+      <div class="chat-structured-header">
+        <span class="chat-structured-badge revision-badge">🔴 طلب تعديل</span>
+        <strong class="chat-structured-title">${esc(cardTitle)}</strong>
+      </div>
+      ${notesText?`<div class="chat-structured-notes"><span class="chat-structured-label">النص:</span> ${esc(notesText)}</div>`:''}
+      ${audioUrl?`
+        <div class="chat-structured-voice-wrap">
+          <span class="chat-structured-label">🎙️ تعليق صوتي:</span>
+          <div class="message-voice-bubble" data-url="${esc(audioUrl)}">
+            <button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي">
+              <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg class="icon-pause hidden" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <div class="voice-bubble-main">
+              <div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+                <div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div>
+                <div class="voice-seek-thumb" style="left:0%"></div>
+              </div>
+              <div class="voice-bubble-meta">
+                <span class="voice-bubble-time">0:00 / ${durStr}</span>
+              </div>
+            </div>
+            <audio preload="metadata" src="${esc(audioUrl)}"></audio>
+          </div>
+        </div>
+      `:''}
+    </div>
+  `;
+} else if(bodyText.startsWith('طلب تعديل — ') || bodyText.startsWith('طلب تعديل [')){
   let target='', notes='';
   if(bodyText.startsWith('طلب تعديل — ')){
     const lines=bodyText.split('\n');
@@ -704,6 +749,14 @@ function renderClientFilesList(files=[], currentTab='client'){
 
 function renderClientFileRow(f){
   const info=getFileTypeInfo(f);
+  const revMatch=(state.portalData?.revisions||state.project?.revisions||[]).find(r=>r.file_id===f.id);
+  let displayName=f.original_name;
+  let customBadge=null;
+  if(revMatch){
+    const optLabel=revMatch.option_name?formatOptionName(revMatch.option_name):'التصميم';
+    displayName=`تعليق صوتي — طلب تعديل — ${optLabel} — V${revMatch.version_number}`;
+    customBadge='<span class="file-source-badge file-source-revision">طلب تعديل</span>';
+  }
   const url='/api/files/' + f.id;
   const iconHtml=info.isImage?
     `<div class="file-thumb-mini-wrap" onclick="openImageLightbox('${url}','${esc(f.original_name)}')"><img src="${url}" alt="${esc(f.original_name)}" class="file-thumb-mini" loading="lazy"></div>`:
@@ -720,7 +773,7 @@ function renderClientFileRow(f){
           <span class="file-row-dot">•</span>
           <span class="file-row-uploader">${uploaderText}</span>
           <span class="file-row-dot">•</span>
-          ${chatBadge}
+          ${customBadge || chatBadge}
         </div>
       </div>
     </div>
@@ -733,33 +786,207 @@ function renderClientFileRow(f){
 }
 
 function openRevisionDialog(versionId,optionId,targetDesc){
+  let mediaRecorder=null,audioChunks=[],audioBlob=null,timerInterval=null,secondsElapsed=0,previewAudio=null,previewUrl=null;
+  const maxDuration=120;
+
+  function cleanupRecording(){
+    if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+    if(previewAudio){previewAudio.pause();previewAudio=null;}
+    if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
+    mediaRecorder=null;audioChunks=[];audioBlob=null;secondsElapsed=0;
+  }
+
   modal('طلب تعديل على '+targetDesc,`
-    <div class="field">
-      <label style="font-weight:700;margin-bottom:6px;display:block;">التصميم المستهدف: <span style="color:var(--purple);">${esc(targetDesc)}</span></label>
-      <p class="muted" style="font-size:13px;margin:0 0 10px;">اكتب ملاحظاتك وتعديلاتك المطلوبة بدقة ليقوم المصمم بتنفيذها في النسخة التالية.</p>
-      <textarea name="request" rows="5" required placeholder="مثال: يرجى تعديل موضع الشعار وجعل اللون الذهبي بدرجة أفتح..."></textarea>
+    <div class="revision-modal-container">
+      <div class="field">
+        <label style="font-weight:700;margin-bottom:6px;display:block;">التصميم المستهدف: <span style="color:var(--purple);">${esc(targetDesc)}</span></label>
+        <p class="muted" style="font-size:13px;margin:0 0 10px;">اكتب ملاحظاتك أو سجّل تعليقاً صوتياً ليشرح التعديلات المطلوبة بدقة ليقوم المصمم بتنفيذها.</p>
+        <textarea id="rev-modal-text" name="request" rows="4" placeholder="اكتب ملاحظات التعديل هنا (اختياري في حال تسجيل صوت)..."></textarea>
+      </div>
+      <div class="revision-voice-section">
+        <div class="revision-voice-header">
+          <span class="revision-voice-title">🎙️ تعليق صوتي (اختياري)</span>
+        </div>
+        <div id="rev-voice-ctrls" class="revision-voice-controls">
+          <button type="button" class="btn-revision-record" id="rev-btn-start">
+            <span class="mic-dot"></span>
+            <span>تسجيل تعليق صوتي</span>
+          </button>
+        </div>
+        <div id="rev-voice-live" class="revision-voice-live hidden">
+          <span class="voice-pulse-dot"></span>
+          <span class="rev-voice-timer" id="rev-timer">00:00</span>
+          <span class="muted" style="font-size:12px;">جارٍ التسجيل...</span>
+          <button type="button" class="btn btn-sm btn-danger" id="rev-btn-stop">⏹️ إيقاف</button>
+        </div>
+        <div id="rev-voice-preview" class="revision-voice-preview hidden">
+          <button type="button" class="voice-play-btn" id="rev-btn-play" aria-label="تشغيل المعاينة">
+            <svg class="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            <svg class="icon-pause hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+          <div class="rev-preview-track-wrap">
+            <div class="rev-preview-track"><div class="rev-preview-fill" id="rev-fill" style="width:0%"></div></div>
+            <span class="rev-preview-time" id="rev-time-label">0:00 / 0:00</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-soft" id="rev-btn-rerecord" title="إعادة التسجيل">🔄 إعادة</button>
+          <button type="button" class="btn btn-sm btn-danger" id="rev-btn-delete" title="حذف التسجيل">🗑️ حذف</button>
+        </div>
+      </div>
     </div>
-  `,async f=>{
-    const reqText=f.get('request');
+  `,async ()=>{
+    const textVal=($('#rev-modal-text')?.value||'').trim();
+    if(!textVal&&!audioBlob){
+      throw Error('يرجى كتابة ملاحظات التعديل أو تسجيل تعليق صوتي');
+    }
+    if(textVal&&textVal.length<3&&!audioBlob){
+      throw Error('ملاحظات التعديل يجب أن تكون 3 أحرف على الأقل');
+    }
     const p=state.portalData.project;
-    await api('/api/portal/'+p.id+'/revisions',{
+    const fd=new FormData();
+    fd.append('version_id',versionId);
+    if(optionId)fd.append('option_id',optionId);
+    if(textVal)fd.append('request',textVal);
+    if(audioBlob){
+      fd.append('audio',audioBlob,'revision-voice.webm');
+      fd.append('duration',Math.max(1,secondsElapsed));
+    }
+    const res=await fetch('/api/portal/'+p.id+'/revisions',{
       method:'POST',
-      body:JSON.stringify({
-        version_id:versionId,
-        option_id:optionId||null,
-        request:reqText
-      })
+      body:fd,
+      credentials:'same-origin'
     });
+    if(!res.ok){
+      const errData=await res.json().catch(()=>({}));
+      throw Error(errData.error||'تعذر إرسال طلب التعديل');
+    }
     toast('تم إرسال طلب التعديل بنجاح');
+    cleanupRecording();
     p.status='REVISION_REQUESTED';
     const subBadge=document.querySelector('.client-project-status-badge');
     if(subBadge)subBadge.innerHTML=badge('REVISION_REQUESTED');
-    const bubble=document.querySelector(`[data-bubble-id="design-bubble-${versionId}-${optionId}"]`);
-    if(bubble){
-      const bBadge=bubble.querySelector('.design-bubble-status-badge');
-      if(bBadge)bBadge.innerHTML='<span class="status status-review"><i></i> تم طلب تعديل 🔄</span>';
-    }
+    const fresh=await api('/api/portal/'+p.id);
+    state.portalData=fresh;
+    await loadPortalMessages();
   },'إرسال طلب التعديل');
+
+  setTimeout(()=>{
+    const startBtn=$('#rev-btn-start'),stopBtn=$('#rev-btn-stop'),playBtn=$('#rev-btn-play'),rerecordBtn=$('#rev-btn-rerecord'),delBtn=$('#rev-btn-delete');
+    const ctrls=$('#rev-voice-ctrls'),live=$('#rev-voice-live'),prev=$('#rev-voice-preview');
+    const timerEl=$('#rev-timer'),fillEl=$('#rev-fill'),timeLbl=$('#rev-time-label');
+    if(!startBtn)return;
+
+    startBtn.onclick=async()=>{
+      if(!navigator.mediaDevices?.getUserMedia){
+        toast('المتصفح الحالي لا يدعم تسجيل الصوت','error');
+        return;
+      }
+      let mime='';
+      const candidates=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/aac'];
+      for(const c of candidates){
+        if(window.MediaRecorder&&MediaRecorder.isTypeSupported(c)){mime=c;break;}
+      }
+      let stream;
+      try{
+        stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      }catch(err){
+        toast('تعذر الوصول للميكروفون: '+err.message,'error');
+        return;
+      }
+      audioChunks=[];
+      try{
+        mediaRecorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+      }catch(e){
+        mediaRecorder=new MediaRecorder(stream);
+      }
+      mediaRecorder.ondataavailable=e=>{
+        if(e.data&&e.data.size>0)audioChunks.push(e.data);
+      };
+      mediaRecorder.onstop=()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        if(secondsElapsed<1){
+          toast('التسجيل قصير جداً');
+          resetVoiceUI();
+          return;
+        }
+        audioBlob=new Blob(audioChunks,{type:mime||'audio/webm'});
+        showPreviewUI();
+      };
+      secondsElapsed=0;
+      ctrls.classList.add('hidden');
+      prev.classList.add('hidden');
+      live.classList.remove('hidden');
+      timerInterval=setInterval(()=>{
+        secondsElapsed++;
+        const m=Math.floor(secondsElapsed/60),s=secondsElapsed%60;
+        if(timerEl)timerEl.textContent=`${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+        if(secondsElapsed>=maxDuration){
+          stopBtn.click();
+        }
+      },1000);
+      mediaRecorder.start(250);
+    };
+
+    stopBtn.onclick=()=>{
+      if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+      if(mediaRecorder&&mediaRecorder.state!=='inactive'){
+        mediaRecorder.stop();
+      }
+    };
+
+    function resetVoiceUI(){
+      cleanupRecording();
+      live.classList.add('hidden');
+      prev.classList.add('hidden');
+      ctrls.classList.remove('hidden');
+    }
+
+    function showPreviewUI(){
+      live.classList.add('hidden');
+      ctrls.classList.add('hidden');
+      prev.classList.remove('hidden');
+      previewUrl=URL.createObjectURL(audioBlob);
+      previewAudio=new Audio(previewUrl);
+      const durStr=formatAudioTime(secondsElapsed);
+      timeLbl.textContent=`0:00 / ${durStr}`;
+
+      const iconPlay=playBtn.querySelector('.icon-play'),iconPause=playBtn.querySelector('.icon-pause');
+      playBtn.onclick=()=>{
+        if(previewAudio.paused){
+          if(window._currentPlayingAudio&&window._currentPlayingAudio!==previewAudio)window._currentPlayingAudio.pause();
+          window._currentPlayingAudio=previewAudio;
+          previewAudio.play();
+          iconPlay.classList.add('hidden');
+          iconPause.classList.remove('hidden');
+        }else{
+          previewAudio.pause();
+          iconPlay.classList.remove('hidden');
+          iconPause.classList.add('hidden');
+        }
+      };
+      previewAudio.ontimeupdate=()=>{
+        const total=previewAudio.duration&&!isNaN(previewAudio.duration)?previewAudio.duration:secondsElapsed;
+        const cur=previewAudio.currentTime||0;
+        const pct=total>0?Math.min(100,(cur/total)*100):0;
+        fillEl.style.width=pct+'%';
+        timeLbl.textContent=`${formatAudioTime(cur)} / ${formatAudioTime(total)}`;
+      };
+      previewAudio.onended=()=>{
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        fillEl.style.width='0%';
+        timeLbl.textContent=`0:00 / ${durStr}`;
+      };
+    }
+
+    rerecordBtn.onclick=()=>{
+      resetVoiceUI();
+      startBtn.click();
+    };
+
+    delBtn.onclick=()=>{
+      resetVoiceUI();
+    };
+  },50);
 }
 
 function openApproveDialog(versionId,optionId,targetDesc){
@@ -771,34 +998,28 @@ function openApproveDialog(versionId,optionId,targetDesc){
     </div>
   `,async()=>{
     const p=state.portalData.project;
-    await api('/api/portal/'+p.id+'/approve',{
+    const res=await fetch('/api/portal/'+p.id+'/approve',{
       method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         version_id:versionId,
         option_id:optionId||null
-      })
+      }),
+      credentials:'same-origin'
     });
+    if(!res.ok){
+      const errData=await res.json().catch(()=>({}));
+      throw Error(errData.error||'تعذر اعتماد التصميم');
+    }
     toast('تم اعتماد التصميم بنجاح');
     p.status='APPROVED';
     const subBadge=document.querySelector('.client-project-status-badge');
     if(subBadge)subBadge.innerHTML=badge('APPROVED');
-    const bubble=document.querySelector(`[data-bubble-id="design-bubble-${versionId}-${optionId}"]`);
-    if(bubble){
-      const bBadge=bubble.querySelector('.design-bubble-status-badge');
-      if(bBadge)bBadge.innerHTML='<span class="status status-approved"><i></i> معتمد نهائيًا ✅</span>';
-      const actions=bubble.querySelector('.design-bubble-actions');
-      if(actions){
-        actions.outerHTML=`
-          <div class="design-bubble-approved-notice">
-            <span>✅</span>
-            <strong>هذا التصميم معتمد رسميًا للمشروع</strong>
-          </div>
-        `;
-      }
-    }
+    const fresh=await api('/api/portal/'+p.id);
+    state.portalData=fresh;
+    await loadPortalMessages();
   },'نعم، اعتماد التصميم نهائيًا');
 }
-
 async function loadPortalMessages(){
   const container=$('#messages');
   if(!container)return;
@@ -807,7 +1028,6 @@ async function loadPortalMessages(){
   const ms=await api('/api/portal/'+p.id+'/messages');
   container.innerHTML='';
 
-  // 1. Synthesize design bubbles from versions
   const designItems=[];
   const versions=state.portalData?.versions||[];
   const files=state.portalData?.files||[];
@@ -822,9 +1042,10 @@ async function loadPortalMessages(){
       const imgFile=optFiles.find(f=>f.mime&&f.mime.startsWith('image/'))||optFiles[0];
       const imgUrl=imgFile?`/api/portal/${p.id}/files/${imgFile.id}`:'';
       const isApproved=opt.status==='APPROVED'||(v.status==='APPROVED'&&(String(v.approved_option_id)===String(opt.id)||!v.approved_option_id));
-      const hasRev=revisions.some(r=>r.version_id===v.id&&(String(r.option_id)===String(opt.id)||!r.option_id));
+      const revObj=revisions.find(r=>r.version_id===v.id&&(String(r.option_id)===String(opt.id)||!r.option_id));
+      const hasRev=v.status==='REVISION_REQUESTED'||!!revObj;
       const isLatest=latestVer&&latestVer.id===v.id;
-      const canAct=isLatest&&!isApproved&&p.status!=='COMPLETED';
+      const canAct=isLatest&&v.status==='PENDING'&&!isApproved&&!hasRev&&p.status!=='COMPLETED';
 
       designItems.push({
         isDesignBubble:true,
@@ -834,20 +1055,19 @@ async function loadPortalMessages(){
         imgUrl:imgUrl,
         isApproved:isApproved,
         hasRevision:hasRev,
+        revisionObj:revObj||null,
         isLatest:isLatest,
         canAct:canAct
       });
     });
   });
 
-  // 2. Interleave messages and designs chronologically
   const allStreamItems=[
     ...ms.map(m=>({...m,isDesignBubble:false})),
     ...designItems
   ];
   allStreamItems.sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime());
 
-  // 3. Render all
   allStreamItems.forEach(item=>{
     if(item.isDesignBubble){
       appendDesignBubble(item);
@@ -897,7 +1117,7 @@ function appendDesignBubble(dItem){
           <span class="version-pill ${dItem.isLatest?'':'is-prev'}">الإصدار V${dItem.version.number}</span>
         </div>
         <div class="design-bubble-status-badge">
-          ${dItem.isApproved?'<span class="status status-approved"><i></i> معتمد نهائيًا ✅</span>':(dItem.hasRevision?'<span class="status status-review"><i></i> تم طلب تعديل 🔄</span>':'<span class="status status-waiting"><i></i> بانتظار المراجعة</span>')}
+          ${dItem.isApproved?'<span class="status status-approved"><i></i> معتمد نهائيًا ✅</span>':(dItem.hasRevision?'<span class="status status-review"><i></i> بانتظار التعديل 🔄</span>':'<span class="status status-waiting"><i></i> بانتظار المراجعة</span>')}
         </div>
         ${dItem.canAct?`
           <div class="design-bubble-actions">
@@ -910,12 +1130,52 @@ function appendDesignBubble(dItem){
               <span>اعتماد التصميم</span>
             </button>
           </div>
+        `:(dItem.hasRevision?`
+          <div class="design-bubble-revision-notice">
+            <div class="revision-notice-header">
+              <span class="revision-notice-badge">طلب تعديل ✓</span>
+              <span class="revision-notice-status">الحالة: بانتظار التعديل</span>
+            </div>
+            ${dItem.revisionObj?.request?`<div class="revision-notice-text">«${esc(dItem.revisionObj.request)}»</div>`:''}
+            ${dItem.revisionObj?.file_url?`
+              <div class="revision-notice-voice">
+                <div class="message-voice-bubble" data-url="${esc(dItem.revisionObj.file_url)}">
+                  <button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي">
+                    <svg class="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                    <svg class="icon-pause hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  </button>
+                  <div class="voice-bubble-main">
+                    <div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+                      <div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div>
+                      <div class="voice-seek-thumb" style="left:0%"></div>
+                    </div>
+                    <div class="voice-bubble-meta">
+                      <span class="voice-bubble-time">0:00 / ${formatAudioTime(dItem.revisionObj.duration||0)}</span>
+                      <span class="voice-mic-icon" title="تعليق صوتي">🎙️</span>
+                    </div>
+                  </div>
+                  <audio preload="metadata" src="${esc(dItem.revisionObj.file_url)}"></audio>
+                </div>
+              </div>
+            `:''}
+            <div class="revision-notice-meta">
+              <span>${esc(formatOptionName(dItem.option.name))}</span> • 
+              <span>الإصدار V${dItem.version.number}</span>
+              ${dItem.revisionObj?.created_at?` • <time>${fmt(dItem.revisionObj.created_at)}</time>`:''}
+            </div>
+          </div>
         `:(dItem.isApproved?`
           <div class="design-bubble-approved-notice">
-            <span>✅</span>
-            <strong>هذا التصميم معتمد رسميًا للمشروع</strong>
+            <div class="approved-notice-header">
+              <span class="approved-notice-badge">تم اعتماد التصميم ✓</span>
+            </div>
+            <div class="approved-notice-meta">
+              <span>${esc(formatOptionName(dItem.option.name))}</span> • 
+              <span>الإصدار المعتمد: V${dItem.version.number}</span>
+              ${dItem.version.approved_at?` • <time>${fmt(dItem.version.approved_at)}</time>`:''}
+            </div>
           </div>
-        `:'')}
+        `:''))}
       </div>
     </div>
     <div class="message-meta">
@@ -928,9 +1188,49 @@ function appendDesignBubble(dItem){
     imgWrap.onclick=()=>openDesignLightbox(dItem.imgUrl,optTitle,dItem.version.id,dItem.option.id,dItem.isApproved,dItem.canAct);
   }
 
+  // If revision voice is present in bubble, attach audio play events
+  if(dItem.revisionObj?.file_url){
+    const audioEl=el.querySelector('audio'),playBtn=el.querySelector('.voice-play-btn'),iconPlay=el.querySelector('.icon-play'),iconPause=el.querySelector('.icon-pause'),fill=el.querySelector('.voice-seek-fill'),thumb=el.querySelector('.voice-seek-thumb'),timeText=el.querySelector('.voice-bubble-time'),seekBar=el.querySelector('.voice-seek-bar'),durTotal=Number(dItem.revisionObj.duration)||0;
+    if(playBtn&&audioEl){
+      playBtn.onclick=()=>{
+        if(audioEl.paused){
+          if(window._currentPlayingAudio&&window._currentPlayingAudio!==audioEl){window._currentPlayingAudio.pause();}
+          window._currentPlayingAudio=audioEl;
+          audioEl.play().catch(e=>{console.error('Audio playback error',e);toast('تعذر تشغيل الصوت','error');});
+        }else{
+          audioEl.pause();
+        }
+      };
+      audioEl.onplay=()=>{iconPlay.classList.add('hidden');iconPause.classList.remove('hidden');};
+      audioEl.onpause=()=>{iconPlay.classList.remove('hidden');iconPause.classList.add('hidden');};
+      audioEl.ontimeupdate=()=>{
+        const total=audioEl.duration&&!isNaN(audioEl.duration)?audioEl.duration:durTotal;
+        const cur=audioEl.currentTime||0;
+        const pct=total>0?Math.min(100,(cur/total)*100):0;
+        if(fill)fill.style.width=pct+'%';
+        if(thumb)thumb.style.left=pct+'%';
+        if(timeText)timeText.textContent=`${formatAudioTime(cur)} / ${formatAudioTime(total)}`;
+      };
+      audioEl.onended=()=>{
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        if(fill)fill.style.width='0%';
+        if(thumb)thumb.style.left='0%';
+        if(timeText)timeText.textContent=`0:00 / ${formatAudioTime(audioEl.duration||durTotal)}`;
+      };
+      if(seekBar){
+        seekBar.onclick=e=>{
+          const rect=seekBar.getBoundingClientRect();
+          const clickPos=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+          const total=audioEl.duration&&!isNaN(audioEl.duration)?audioEl.duration:durTotal;
+          if(total>0){audioEl.currentTime=clickPos*total;}
+        };
+      }
+    }
+  }
+
   container.append(el);
 }
-
 async function clientPortalRefresh(){
   const d=await api('/api/portal/'+state.portalData.project.id);
   state.portalData=d;

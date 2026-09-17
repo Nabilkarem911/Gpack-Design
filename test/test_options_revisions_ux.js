@@ -149,17 +149,39 @@ test('Client selects options, creates revisions, and designer views formatted op
     const title1 = `تعديل على V${rev1.version_number}${rev1.option_name ? ' — ' + formatOptionName(rev1.option_name) : ''}`;
     assert.equal(title1, 'تعديل على V8 — الخيار B', 'Title must render: تعديل على V8 — الخيار B');
 
-    // TEST 4: Client selects C and creates revision request
+    // Invariant: Duplicate revision on V8 is rejected with 409 Conflict
+    const revDupRes = await fetch(`${BASE_URL}/api/portal/${projectId}/revisions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Cookie': clientCookie },
+      body: JSON.stringify({ version_id: versionId, option_id: optBId, request: 'تكرار التعديل على نفس الإصدار' })
+    });
+    assert.equal(revDupRes.status, 409, 'Duplicate revision on same version must return 409');
+
+    // Designer uploads V9 with Option C for new revision cycle
+    const v9Res = await pool.query(`
+      INSERT INTO versions (project_id, number, status)
+      VALUES ($1, 9, 'PENDING')
+      RETURNING id
+    `, [projectId]);
+    const v9Id = v9Res.rows[0].id;
+    const optC2Res = await pool.query(`
+      INSERT INTO design_options (version_id, name, status)
+      VALUES ($1, 'الخيار C', 'PROPOSED')
+      RETURNING id
+    `, [v9Id]);
+    const optC2Id = optC2Res.rows[0].id;
+
+    // TEST 4: Client selects C on V9 and creates revision request
     await fetch(`${BASE_URL}/api/portal/${projectId}/options/select`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Cookie': clientCookie },
-      body: JSON.stringify({ version_id: versionId, option_id: optCId })
+      body: JSON.stringify({ version_id: v9Id, option_id: optC2Id })
     });
 
     const revCRes = await fetch(`${BASE_URL}/api/portal/${projectId}/revisions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Cookie': clientCookie },
-      body: JSON.stringify({ version_id: versionId, option_id: optCId, request: 'تغيير حجم الشعار في الخيار C' })
+      body: JSON.stringify({ version_id: v9Id, option_id: optC2Id, request: 'تغيير حجم الشعار في الخيار C' })
     });
     assert.equal(revCRes.status, 201);
     const revCData = await revCRes.json();
@@ -170,26 +192,40 @@ test('Client selects options, creates revisions, and designer views formatted op
     const projData2 = await projDataRes2.json();
     const rev2 = projData2.revisions.find(r => r.id === revCData.id);
     assert.ok(rev2);
-    assert.equal(rev2.version_number, 8);
+    assert.equal(rev2.version_number, 9);
     const title2 = `تعديل على V${rev2.version_number}${rev2.option_name ? ' — ' + formatOptionName(rev2.option_name) : ''}`;
-    assert.equal(title2, 'تعديل على V8 — الخيار C', 'Title must render: تعديل على V8 — الخيار C');
+    assert.equal(title2, 'تعديل على V9 — الخيار C', 'Title must render: تعديل على V9 — الخيار C');
 
     // TEST 5: Verify both revisions maintain their distinct design options
     assert.equal(projData2.revisions.length, 2);
     const titles = projData2.revisions.map(r => `تعديل على V${r.version_number}${r.option_name ? ' — ' + formatOptionName(r.option_name) : ''}`);
     assert.ok(titles.includes('تعديل على V8 — الخيار B'));
-    assert.ok(titles.includes('تعديل على V8 — الخيار C'));
+    assert.ok(titles.includes('تعديل على V9 — الخيار C'));
+
+    // Designer uploads V10 with Option C selected
+    const v10Res = await pool.query(`
+      INSERT INTO versions (project_id, number, status)
+      VALUES ($1, 10, 'PENDING')
+      RETURNING id
+    `, [projectId]);
+    const v10Id = v10Res.rows[0].id;
+    const optC3Res = await pool.query(`
+      INSERT INTO design_options (version_id, name, status)
+      VALUES ($1, 'الخيار C', 'SELECTED')
+      RETURNING id
+    `, [v10Id]);
+    const optC3Id = optC3Res.rows[0].id;
 
     // TEST 6: Revision without explicit option_id falls back to currently SELECTED option
     const revFallbackRes = await fetch(`${BASE_URL}/api/portal/${projectId}/revisions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Cookie': clientCookie },
-      body: JSON.stringify({ version_id: versionId, request: 'طلب تعديل بدون تحديد خيار صريح' })
+      body: JSON.stringify({ version_id: v10Id, request: 'طلب تعديل بدون تحديد خيار صريح' })
     });
     assert.equal(revFallbackRes.status, 201);
     const revFbData = await revFallbackRes.json();
     const dbRevFb = (await pool.query('SELECT option_id FROM revisions WHERE id = $1', [revFbData.id])).rows[0];
-    assert.equal(dbRevFb.option_id, optCId, 'Must fall back to currently SELECTED option C');
+    assert.equal(dbRevFb.option_id, optC3Id, 'Must fall back to currently SELECTED option C');
 
     // TEST 9: IDOR security check — Client attempting to pass an option_id from another project
     // Create another project with another version & option
@@ -214,11 +250,18 @@ test('Client selects options, creates revisions, and designer views formatted op
     `, [otherVerId]);
     const foreignOptionId = otherOptRes.rows[0].id;
 
+    const v11Res = await pool.query(`
+      INSERT INTO versions (project_id, number, status)
+      VALUES ($1, 11, 'PENDING')
+      RETURNING id
+    `, [projectId]);
+    const v11Id = v11Res.rows[0].id;
+
     // Client for project 1 tries to submit revision claiming foreignOptionId
     const idorRes = await fetch(`${BASE_URL}/api/portal/${projectId}/revisions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Cookie': clientCookie },
-      body: JSON.stringify({ version_id: versionId, option_id: foreignOptionId, request: 'محاولة اختراق خيار مشروع آخر' })
+      body: JSON.stringify({ version_id: v11Id, option_id: foreignOptionId, request: 'محاولة اختراق خيار مشروع آخر' })
     });
     assert.equal(idorRes.status, 400, 'Server must reject option_id from another project with 400');
 
@@ -226,7 +269,7 @@ test('Client selects options, creates revisions, and designer views formatted op
     const idorSelectRes = await fetch(`${BASE_URL}/api/portal/${projectId}/options/select`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Cookie': clientCookie },
-      body: JSON.stringify({ version_id: versionId, option_id: foreignOptionId })
+      body: JSON.stringify({ version_id: v11Id, option_id: foreignOptionId })
     });
     assert.equal(idorSelectRes.status, 400, 'Server must reject selecting option_id from another project with 400');
 

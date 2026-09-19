@@ -205,7 +205,8 @@ function fmtFileSize(bytes) {
 }
 
 function getFileTypeInfo(f) {
-  const name = f.original_name || '';
+  if (!f || typeof f !== 'object') return { type: 'FILE', badgeClass: 'file-type-default' };
+  const name = f.original_name || f.name || f.filename || '';
   const ext = (name.split('.').pop() || '').toUpperCase();
   const mime = (f.mime || '').toLowerCase();
   if (mime.startsWith('image/')) return { type: ext || 'PNG', isImage: true };
@@ -218,12 +219,43 @@ function getFileTypeInfo(f) {
   return { type: ext || 'FILE', badgeClass: 'file-type-default' };
 }
 
+function getWorkspaceFileDisplayName(f) {
+  if (!f || typeof f !== 'object') return 'ملف بدون اسم';
+  if (typeof f.display_name === 'string' && f.display_name.trim()) {
+    return f.display_name.trim();
+  }
+  if (typeof f.displayName === 'string' && f.displayName.trim()) {
+    return f.displayName.trim();
+  }
+  const revMatch = (state.project?.revisions || state.portalData?.revisions || []).find(r => r.file_id === f.id);
+  if (revMatch) {
+    const optLabel = revMatch.option_name ? formatOptionName(revMatch.option_name) : 'التصميم';
+    return `تعليق صوتي — طلب تعديل — ${optLabel} — V${revMatch.version_number}`;
+  }
+  if (typeof f.original_name === 'string' && f.original_name.trim()) {
+    return f.original_name.trim();
+  }
+  if (typeof f.name === 'string' && f.name.trim()) {
+    return f.name.trim();
+  }
+  if (typeof f.filename === 'string' && f.filename.trim()) {
+    return f.filename.trim();
+  }
+  return 'ملف بدون اسم';
+}
+
 function renderWorkspaceFileRow(f) {
+  if (!f) return '';
   const info = getFileTypeInfo(f);
+  const displayName = getWorkspaceFileDisplayName(f);
+  const safeDownloadName = (f && f.original_name) ? f.original_name : displayName;
+  const fileId = f && f.id ? f.id : '';
+  const fileSize = f && f.size ? f.size : (f && f.file_size ? f.file_size : 0);
+  const isFromChat = f && Boolean(f.message_id);
   const iconHtml = info.isImage
-    ? `<div class="file-thumb-mini-wrap"><img src="/api/files/${f.id}" alt="${esc(f.original_name)}" class="file-thumb-mini" loading="lazy"></div>`
+    ? `<div class="file-thumb-mini-wrap"><img src="/api/files/${fileId}" alt="${esc(displayName)}" class="file-thumb-mini" loading="lazy"></div>`
     : `<div class="file-icon-badge ${info.badgeClass}"><span>${info.type}</span></div>`;
-  return `<div class="compact-file-row"><div class="file-row-main">${iconHtml}<div class="file-row-details"><span class="file-row-name" title="${esc(displayName)}">${esc(displayName)}</span><span class="file-row-sub">${info.type} • ${fmtFileSize(f.size)}${f.message_id ? ' • <span class="file-source-badge chat-source">من المحادثة</span>' : ''}</span></div></div><div class="file-row-actions"><a href="/api/files/${f.id}" target="_blank" class="file-action-link" title="فتح الملف">فتح</a><a href="/api/files/${f.id}" download="${esc(f.original_name)}" class="file-download-btn" title="تنزيل">⤓</a></div></div>`;
+  return `<div class="compact-file-row"><div class="file-row-main">${iconHtml}<div class="file-row-details"><span class="file-row-name" title="${esc(displayName)}">${esc(displayName)}</span><span class="file-row-sub">${info.type} • ${fmtFileSize(fileSize)}${isFromChat ? ' • <span class="file-source-badge chat-source">من المحادثة</span>' : ''}</span></div></div><div class="file-row-actions"><a href="/api/files/${fileId}" target="_blank" class="file-action-link" title="فتح الملف">فتح</a><a href="/api/files/${fileId}" download="${esc(safeDownloadName)}" class="file-download-btn" title="تنزيل">⤓</a></div></div>`;
 }
 
 function renderWorkspaceFilesList(files, activeTab) {
@@ -748,18 +780,20 @@ function renderClientFilesList(files=[], currentTab='client'){
 }
 
 function renderClientFileRow(f){
+  if (!f) return '';
   const info=getFileTypeInfo(f);
   const revMatch=(state.portalData?.revisions||state.project?.revisions||[]).find(r=>r.file_id===f.id);
-  let displayName=f.original_name;
+  let displayName=getWorkspaceFileDisplayName(f);
   let customBadge=null;
   if(revMatch){
     const optLabel=revMatch.option_name?formatOptionName(revMatch.option_name):'التصميم';
     displayName=`تعليق صوتي — طلب تعديل — ${optLabel} — V${revMatch.version_number}`;
     customBadge='<span class="file-source-badge file-source-revision">طلب تعديل</span>';
   }
-  const url='/api/files/' + f.id;
+  const fileId = f && f.id ? f.id : '';
+  const url='/api/files/' + fileId;
   const iconHtml=info.isImage?
-    `<div class="file-thumb-mini-wrap" onclick="openImageLightbox('${url}','${esc(f.original_name)}')"><img src="${url}" alt="${esc(f.original_name)}" class="file-thumb-mini" loading="lazy"></div>`:
+    `<div class="file-thumb-mini-wrap" onclick="openImageLightbox('${url}','${esc(displayName)}')"><img src="${url}" alt="${esc(displayName)}" class="file-thumb-mini" loading="lazy"></div>`:
     `<div class="file-icon-badge ${info.badgeClass}"><span>${info.type}</span></div>`;
   const uploaderText=f.uploaded_by_type==='CLIENT'?'مرفق من طرفك':'مرفق من المصمم';
   const chatBadge=f.message_id?'<span class="file-source-badge file-source-chat">مرفق محادثة</span>':'<span class="file-source-badge file-source-upload">ملف تصميم</span>';
@@ -767,7 +801,7 @@ function renderClientFileRow(f){
     <div class="file-row-main">
       ${iconHtml}
       <div class="file-row-details">
-        <span class="file-row-name" title="${esc(f.original_name)}">${esc(f.original_name)}</span>
+        <span class="file-row-name" title="${esc(displayName)}">${esc(displayName)}</span>
         <div class="file-row-meta">
           <span class="file-row-size">${fmtFileSize(f.size || f.file_size || 0)}</span>
           <span class="file-row-dot">•</span>

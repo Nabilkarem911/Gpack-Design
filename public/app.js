@@ -1103,7 +1103,8 @@ function openRevisionDialog(versionId,optionId,targetDesc){
     if(optionId)fd.append('option_id',optionId);
     if(text)fd.append('request',text);
     if(audioBlob){
-      fd.append('audio',audioBlob,'voice-revision.webm');
+      const revExt=(audioBlob.type||'').includes('mp4')?'mp4':(audioBlob.type||'').includes('ogg')?'ogg':'webm';
+      fd.append('audio',audioBlob,`voice-revision.${revExt}`);
       fd.append('duration',String(secondsElapsed));
     }
     const res=await fetch('/api/portal/'+p.id+'/revisions',{
@@ -1159,9 +1160,11 @@ function openRevisionDialog(versionId,optionId,targetDesc){
   if(startBtn){
     startBtn.onclick=async()=>{
       try{
+        if(!window.MediaRecorder){toast('المتصفح الحالي لا يدعم تسجيل الصوت','error');return}
         const stream=await navigator.mediaDevices.getUserMedia({audio:true});
         audioChunks=[];secondsElapsed=0;timerEl.textContent='00:00';
-        mediaRecorder=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/ogg'});
+        let recMime='';for(const c of['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/aac']){if(MediaRecorder.isTypeSupported(c)){recMime=c;break}}
+        try{mediaRecorder=recMime?new MediaRecorder(stream,{mimeType:recMime}):new MediaRecorder(stream)}catch(e){mediaRecorder=new MediaRecorder(stream)}
         mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)audioChunks.push(e.data);};
         mediaRecorder.onstop=()=>{
           stream.getTracks().forEach(t=>t.stop());

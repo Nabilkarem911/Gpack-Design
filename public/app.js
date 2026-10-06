@@ -190,7 +190,7 @@ function filterStatus(status){state.tab=status?status==='WAITING_FOR_CLIENT'?'wa
 async function clients(v){state.clientSearch=state.clientSearch||'';state.clientFilter=state.clientFilter||'all';const rows=await api('/api/clients');state.allClients=rows;v.innerHTML=`<div class="manager-page-container"><header class="page-header"><div><span class="eyebrow">إدارة الحسابات</span><h1>العملاء</h1><p>سجل العملاء وإدارة صلاحيات الوصول وبيانات التواصل.</p></div><button class="btn btn-primary" onclick="newClient()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>عميل جديد</span></button></header><div class="manager-toolbar"><div class="search-wrap"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg><input class="search-input" id="client-search-input" placeholder="ابحث باسم العميل أو البريد أو الجوال..." value="${esc(state.clientSearch)}" oninput="state.clientSearch=this.value;renderClientsList()"></div><div class="filter-chips"><button class="filter-chip ${state.clientFilter==='all'?'active':''}" onclick="setClientFilter('all')">الكل (${rows.length})</button><button class="filter-chip ${state.clientFilter==='active'?'active':''}" onclick="setClientFilter('active')">نشط (${rows.filter(c=>c.active).length})</button><button class="filter-chip ${state.clientFilter==='inactive'?'active':''}" onclick="setClientFilter('inactive')">معطل (${rows.filter(c=>!c.active).length})</button></div></div><section class="panel clients-panel-v2" id="clients-list-container"></section></div>`;renderClientsList()}
 function renderClientsList(){const rows=state.allClients||[];let filtered=rows;if(state.clientFilter==='active')filtered=filtered.filter(c=>c.active);if(state.clientFilter==='inactive')filtered=filtered.filter(c=>!c.active);if(state.clientSearch){const q=state.clientSearch.trim().toLowerCase();filtered=filtered.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.phone||'').includes(q))}const container=$('#clients-list-container');if(container){if(!filtered.length){container.innerHTML='<div class="empty-state-compact"><div class="empty-icon-pill">👥</div><h4>لا يوجد عملاء مطابقون</h4><p>جرّب تعديل نص البحث أو إضافة عميل جديد.</p></div>'}else{container.innerHTML=`<div class="clients-grid-v2">${filtered.map(c=>`<div class="client-card-v2"><div class="client-card-header"><div class="client-avatar-v2">${esc((c.name||'ع').slice(0,1))}</div><div class="client-title-block"><h3 class="client-name">${esc(c.name)}</h3><small class="client-since">عميل منذ ${fmt(c.created_at)}</small></div>${c.active?'<span class="status-pill status-approved">نشط</span>':'<span class="status-pill status-cancelled">معطل</span>'}</div><div class="client-card-contact"><div class="contact-line"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>${esc(c.email||'—')}</span></div><div class="contact-line"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>${esc(c.phone||'—')}</span></div></div><div class="client-card-actions"><button class="btn btn-soft btn-sm" onclick="editClient(${c.id},'${esc(c.name)}','${esc(c.email||'')}','${esc(c.phone||'')}')">تعديل البيانات</button><button class="btn btn-soft btn-sm ${c.active?'btn-danger-soft':''}" onclick="toggleClient(${c.id},${c.active})">${c.active?'تعطيل':'تفعيل'}</button></div></div>`).join('')}</div>`}}}
 function setClientFilter(f){state.clientFilter=f;renderClientsList()}
-function modal(title,body,submit,button='حفظ'){document.body.insertAdjacentHTML('beforeend',`<div class="modal-back" id="modal"><form class="modal modal-v2"><div class="modal-header"><div><span class="eyebrow">G.PACK PORTAL</span><h2>${title}</h2></div><button type="button" class="modal-close" aria-label="إغلاق">×</button></div><div class="modal-body">${body}</div><div class="modal-actions"><button type="button" class="btn btn-soft modal-cancel">إلغاء</button><button type="submit" class="btn btn-primary">${button}</button></div></form></div>`);const m=$('#modal');m.querySelectorAll('.modal-close,.modal-cancel').forEach(x=>x.onclick=()=>m.remove());m.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=m.querySelector('button[type=submit]');if(b)b.disabled=true;try{await submit(new FormData(e.target));m.remove();toast('تم الحفظ بنجاح');renderInternal()}catch(x){toast(x.message,'error')}finally{if(b)b.disabled=false}}}
+function modal(title,body,submit,button='حفظ'){document.body.insertAdjacentHTML('beforeend',`<div class="modal-back" id="modal"><form class="modal modal-v2"><div class="modal-header"><div><span class="eyebrow">G.PACK PORTAL</span><h2>${title}</h2></div><button type="button" class="modal-close" aria-label="إغلاق">×</button></div><div class="modal-body">${body}</div><div class="modal-actions"><button type="button" class="btn btn-soft modal-cancel">إلغاء</button><button type="submit" class="btn btn-primary">${button}</button></div></form></div>`);const m=$('#modal');m.querySelectorAll('.modal-close,.modal-cancel').forEach(x=>x.onclick=()=>m.remove());m.querySelector('form').onsubmit=async e=>{e.preventDefault();const b=m.querySelector('button[type=submit]');if(b){b.disabled=true;b.dataset.origText=b.textContent;b.innerHTML='<span class="btn-spinner"></span> جارٍ الإرسال...';}try{await submit(new FormData(e.target));m.remove();toast('تم الحفظ بنجاح');if(!state.portal)renderInternal()}catch(x){toast(x.message,'error')}finally{if(b&&document.body.contains(b)){b.disabled=false;b.textContent=b.dataset.origText||button}}}}
 function newClient(){modal('إضافة عميل جديد','<div class="field"><label>اسم العميل / المؤسسة <span class="req">*</span></label><input name="name" placeholder="مثال: شركة اسماك البحارة" required></div><div class="form-row-2"><div class="field"><label>البريد الإلكتروني</label><input name="email" type="email" placeholder="client@example.com"></div><div class="field"><label>رقم الجوال</label><input name="phone" placeholder="05XXXXXXXX"></div></div>',f=>api('/api/clients',{method:'POST',body:JSON.stringify(Object.fromEntries(f))}),'إضافة العميل')}
 function editClient(id,name,email,phone){modal('تعديل بيانات العميل',`<div class="field"><label>اسم العميل / المؤسسة <span class="req">*</span></label><input name="name" value="${esc(name)}" required></div><div class="form-row-2"><div class="field"><label>البريد الإلكتروني</label><input name="email" type="email" value="${esc(email||'')}"></div><div class="field"><label>رقم الجوال</label><input name="phone" value="${esc(phone||'')}"></div></div>`,f=>api('/api/clients/'+id,{method:'PATCH',body:JSON.stringify(Object.fromEntries(f))}),'تحديث البيانات')}
 async function toggleClient(id,active){if(!confirm(active?'هل تريد تعطيل العميل؟':'هل تريد تفعيل العميل؟'))return;try{await api('/api/clients/'+id,{method:'PATCH',body:JSON.stringify({active:!active})});toast(active?'تم تعطيل العميل':'تم تفعيل العميل');renderInternal()}catch(e){toast(e.message,'error')}}
@@ -288,7 +288,7 @@ function renderWorkspaceFilesPanel(files = []) {
   return `<div class="compact-files-panel"><div class="files-panel-top"><h3 class="files-panel-title">الملفات</h3><div class="files-tabs-wrap"><button type="button" class="files-tab-btn ${state.workspaceFilesTab === 'designer' ? 'active' : ''}" data-tab="designer" onclick="setWorkspaceFilesTab('designer')"><span>ملفات المصمم</span><span class="files-count-badge">${designerCount}</span></button><button type="button" class="files-tab-btn ${state.workspaceFilesTab === 'client' ? 'active' : ''}" data-tab="client" onclick="setWorkspaceFilesTab('client')"><span>ملفات العميل</span><span class="files-count-badge">${clientCount}</span></button></div></div><div class="compact-files-list" id="workspace-files-list">${renderWorkspaceFilesList(files, state.workspaceFilesTab)}</div></div>`;
 }
 
-async function openProject(id,pushRoute=true){closeStream();state.activeProjectId=Number(id);sessionStorage.setItem('gpack_active_project',id);if(pushRoute&&location.pathname!=='/project/'+id){history.pushState({projectId:id},'','/project/'+id);}let d;try{d=await api('/api/projects/'+id)}catch(err){  const v=$('#internal-view');if(v){v.innerHTML=`<div class="error-state"><h2>تعذر تحميل المشروع</h2><p>${esc(err.message)}</p><button class="btn btn-soft" onclick="exitProject()">العودة للمشاريع</button></div>`}  toast(err.message||'تعذر تحميل المشروع','error');return;}const p=d.project;state.project=d;const revisions=d.revisions||[],latestOptions=d.versions[0]?normalizeOptions(d.versions[0].options||[],d.files.filter(f=>f.version_id===d.versions[0].id)):[];document.querySelector('#internal-view').innerHTML=`<div class="workspace-top"><button class="back-button" onclick="state.tab='projects';renderInternal()">→ رجوع للمشاريع</button><div class="workspace-title"><span class="eyebrow">مساحة المشروع</span><h1>${esc(p.name)}</h1><div>${badge(p.status)} <span class="muted">${esc(d.client.name)}</span></div></div><button class="btn btn-gold" onclick="generateAccess(${p.id},'${esc(d.client.phone||'')}','${esc(d.client.name||'')}')">رابط العميل</button></div><div class="workspace-grid"><aside class="workspace-side panel"><h3>الموجز</h3><p class="brief-text">${esc(p.brief||p.description||'لم تتم إضافة موجز بعد')}</p>${renderWorkspaceFilesPanel(d.files)}</aside><section class="panel workspace-chat"><div class="section-heading"><h2>المحادثة</h2><span class="live-pill"><i></i> مباشرة</span></div><div class="messages" id="messages"></div><form class="composer" id="internal-composer"><input type="file" id="internal-file" hidden accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,text/plain,application/zip,application/x-zip-compressed,application/x-rar-compressed,application/illustrator,application/postscript,application/x-photoshop,image/vnd.adobe.photoshop"><button type="button" class="attach-button" id="internal-attach" aria-label="إرفاق ملف" title="إرفاق ملف"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.49-8.49a4 4 0 0 1 5.66 5.66l-8.5 8.5a2 2 0 0 1-2.83-2.83l7.78-7.78"/></svg></button><input name="body" placeholder="اكتب رسالة أو أرفق ملفاً..." autocomplete="off"><button type="button" class="voice-record-btn" id="internal-voice-btn" aria-label="تسجيل رسالة صوتية" title="تسجيل رسالة صوتية"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button><button class="send-button" aria-label="إرسال">➤</button><div id="internal-attachment" class="attachment-preview hidden"></div><div id="internal-voice-bar" class="voice-composer-bar hidden"></div></form></section><aside class="workspace-review panel"><div class="section-heading"><h2>آخر نسخة</h2>${d.versions[0]?`<span class="version-pill">V${d.versions[0].number}</span>`:''}</div>${d.versions[0]?`<div class="internal-preview">${internalPreview(d)}</div><p class="version-note">${esc(d.versions[0].notes||'بدون ملاحظات')}</p>${latestOptions.length?'<div class="designer-options"><b class="designer-options-title">خيارات التصميم</b><div class="designer-options-grid">'+latestOptions.map((o,i)=>{const isSel=o.status==='SELECTED';const isApp=o.status==='APPROVED';return `<div class="designer-option-card ${isSel?'is-selected':''} ${isApp?'is-approved':''}"><div class="option-preview">${optionImage(o)}</div><strong>${formatOptionName(o.name)||('الخيار '+(i+1))}</strong><small>${esc(o.name)}</small><span class="designer-option-status-badge ${isSel?'status-selected':isApp?'status-approved':'status-proposed'}">${isSel?'مختار للمراجعة':isApp?'معتمد':'مقترح'}</span></div>`}).join('')+'</div></div>':''}${state.user.role==='DESIGNER'?(p.status==='NEW_TASK'?'<button class="btn btn-gold btn-block" onclick="startProject('+p.id+')">بدء التنفيذ</button>':'<button class="btn btn-primary btn-block" onclick="uploadVersion('+p.id+')">تسليم التصميم</button>'):''}`:'<div class="empty-state"><h3>لم يتم تسليم تصميم رسمي بعد</h3><p>مرفقات المحادثة تبقى في الملفات فقط. استخدم زر تسليم التصميم لإرسال V1 للعميل.</p></div>'+ (state.user.role==='DESIGNER'?(p.status==='NEW_TASK'?'<button class="btn btn-gold btn-block" onclick="startProject('+p.id+')">بدء التنفيذ</button>':'<button class="btn btn-primary btn-block" onclick="uploadVersion('+p.id+')">تسليم التصميم V1</button>'):'')}<h3>طلبات التعديل</h3>${revisions.map(r=>`<div class="revision-card"><b>تعديل على V${r.version_number}${r.option_name?' — '+esc(formatOptionName(r.option_name)):''}</b><p>${esc(r.request)}</p><small>${fmt(r.created_at)}</small></div>`).join('')||'<div class="compact-empty">لا توجد طلبات تعديل</div>'}</aside></div>`;const ms=await api('/api/projects/'+id+'/messages');$('#messages').innerHTML='';ms.forEach(appendMessage);$('#internal-attach').onclick=()=>$('#internal-file').click();setupAttachmentPreview($('#internal-file'),$('#internal-attachment'));$('#internal-composer').onsubmit=async e=>{e.preventDefault();const input=e.target.body,file=$('#internal-file').files[0];if(!input.value.trim()&&!file)return;const sendBtn=e.target.querySelector('.send-button');if(sendBtn)sendBtn.disabled=true;try{if(file){const fd=new FormData();fd.append('file',file);if(input.value.trim())fd.append('body',input.value.trim());fd.append('client_event_id',crypto.randomUUID());const resMsg=await api('/api/projects/'+id+'/messages/attachment',{method:'POST',body:fd});if(resMsg){appendMessage(resMsg);syncProjectFileFromMessage(resMsg);}}else{const resMsg=await api('/api/projects/'+id+'/messages',{method:'POST',body:JSON.stringify({body:input.value.trim(),client_event_id:crypto.randomUUID()})});if(resMsg)appendMessage(resMsg);}e.target.reset();$('#internal-file').value='';const box=$('#internal-attachment');if(box){box.classList.add('hidden');box.innerHTML=''}toast('تم الإرسال')}catch(x){toast(x.message||'تعذر إرسال المرفق','error')}finally{if(sendBtn)sendBtn.disabled=false}};setupVoiceComposer({composer:$('#internal-composer'),recordBtn:$('#internal-voice-btn'),bar:$('#internal-voice-bar'),uploadEndpoint:'/api/projects/'+id+'/messages/voice'});openStream('/api/projects/'+id+'/stream',x=>{if(x.type==='message'){appendMessage(x.message);if(x.message&&x.message.file_id)syncProjectFileFromMessage(x.message);}else if(x.type==='file'){if(x.file)syncProjectFileFromMessage({file_id:x.file.id,original_name:x.file.original_name,mime:x.file.mime,file_size:x.file.size,created_at:x.file.created_at,sender_type:x.file.uploaded_by_type});else openProject(id,false);}else if(['version','revision','approved','status','option'].includes(x.type))openProject(id,false)})}function fileItem(f){return`<div class="file-item"><span class="file-icon">${f.mime.startsWith('image/')?'▧':'▤'}</span><span><b>${esc(f.original_name)}</b><small>${f.uploaded_by_type==='CLIENT'?'ملف من العميل':'ملف من المصمم'} · ${Math.ceil(f.size/1024)} KB</small></span><a href="/api/files/${f.id}" target="_blank">فتح</a></div>`}function internalPreview(d){const f=d.files.find(x=>x.version_id===d.versions[0].id&&x.mime.startsWith('image/'));return f?`<a href="/api/files/${f.id}" target="_blank"><img src="/api/files/${f.id}" alt="V${d.versions[0].number}"></a>`:'<span class="muted">ملف التصميم متاح ضمن الملفات</span>'}async function loadMessages(){const ms=await api('/api/projects/'+state.project.project.id+'/messages');$('#messages').innerHTML='';ms.forEach(appendMessage)}function openImageLightbox(url,name){let lightbox=document.getElementById('chat-image-lightbox');if(!lightbox){lightbox=document.createElement('div');lightbox.id='chat-image-lightbox';lightbox.className='chat-image-lightbox hidden';lightbox.innerHTML='<div class="chat-image-lightbox-backdrop"></div><div class="chat-image-lightbox-content"><div class="chat-image-lightbox-header"><span class="chat-image-lightbox-title"></span><div class="chat-image-lightbox-actions"><a href="#" target="_blank" download class="chat-image-lightbox-download" title="تحميل" aria-label="تحميل الصورة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a><button type="button" class="chat-image-lightbox-close" aria-label="إغلاق">✕</button></div></div><div class="chat-image-lightbox-body"><img src="" alt="" class="chat-image-lightbox-img"/></div></div>';document.body.appendChild(lightbox);lightbox.querySelector('.chat-image-lightbox-backdrop').onclick=()=>lightbox.classList.add('hidden');lightbox.querySelector('.chat-image-lightbox-close').onclick=()=>lightbox.classList.add('hidden');document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!lightbox.classList.contains('hidden'))lightbox.classList.add('hidden')})}lightbox.querySelector('.chat-image-lightbox-title').textContent=name||'';const img=lightbox.querySelector('.chat-image-lightbox-img');img.src=url;img.alt=name||'';const dl=lightbox.querySelector('.chat-image-lightbox-download');dl.href=url;dl.setAttribute('download',name||'image');lightbox.classList.remove('hidden')}function setupAttachmentPreview(fileInput,previewBox){if(!fileInput||!previewBox)return;fileInput.onchange=e=>{const f=e.target.files[0];if(!f){previewBox.classList.add('hidden');previewBox.innerHTML='';return}const isImg=f.type.startsWith('image/'),sizeStr=f.size>1024*1024?(f.size/(1024*1024)).toFixed(1)+' MB':Math.ceil(f.size/1024)+' KB',ext=f.name.includes('.')?f.name.split('.').pop().toUpperCase():'FILE';previewBox.classList.remove('hidden');if(isImg){const objUrl=URL.createObjectURL(f);previewBox.innerHTML='<div class="attachment-preview-card attachment-preview-img-card"><div class="attachment-preview-thumb-wrap"><img src="'+objUrl+'" alt="'+esc(f.name)+'" class="attachment-preview-thumb"/></div><div class="attachment-preview-info"><span class="attachment-preview-name" title="'+esc(f.name)+'">'+esc(f.name)+'</span><span class="attachment-preview-size">'+sizeStr+' • صورة</span></div><button type="button" class="attachment-preview-remove" aria-label="إلغاء المرفق" title="إلغاء المرفق">✕</button></div>'}else{previewBox.innerHTML='<div class="attachment-preview-card attachment-preview-doc-card"><div class="attachment-preview-file-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="attachment-preview-ext-badge">'+esc(ext.slice(0,4))+'</span></div><div class="attachment-preview-info"><span class="attachment-preview-name" title="'+esc(f.name)+'">'+esc(f.name)+'</span><span class="attachment-preview-size">'+sizeStr+' • ملف</span></div><button type="button" class="attachment-preview-remove" aria-label="إلغاء المرفق" title="إلغاء المرفق">✕</button></div>'}const removeBtn=previewBox.querySelector('.attachment-preview-remove');if(removeBtn){removeBtn.onclick=()=>{fileInput.value='';previewBox.classList.add('hidden');previewBox.innerHTML=''}}}}function formatAudioTime(s){const sec=Math.max(0,Math.floor(Number(s)||0)),m=Math.floor(sec/60),rem=sec%60;return`${m}:${rem<10?'0':''}${rem}`}function setupVoiceComposer(opts){const{composer,recordBtn,bar,uploadEndpoint}=opts;if(!composer||!recordBtn||!bar)return;let mediaRecorder=null,audioChunks=[],stream=null,timerInterval=null,secondsElapsed=0,audioBlob=null,previewAudio=null,previewUrl=null;const maxDuration=120;function cleanupStream(){if(stream){try{stream.getTracks().forEach(t=>t.stop())}catch(e){}stream=null}}function resetComposer(){clearInterval(timerInterval);timerInterval=null;cleanupStream();if(previewAudio){previewAudio.pause();previewAudio=null}if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null}mediaRecorder=null;audioChunks=[];secondsElapsed=0;audioBlob=null;bar.innerHTML='';bar.classList.add('hidden');composer.classList.remove('is-recording-active')}recordBtn.onclick=async e=>{e.preventDefault();if(!navigator.mediaDevices?.getUserMedia){toast('المتصفح الحالي لا يدعم تسجيل الصوت','error');return}let mime='';const candidates=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/aac'];for(const c of candidates){if(window.MediaRecorder&&MediaRecorder.isTypeSupported(c)){mime=c;break}}try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}catch(err){if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){toast('تم رفض إذن الوصول للميكروفون. يرجى السماح به من إعدادات المتصفح.','error')}else{toast('تعذر الوصول إلى الميكروفون: '+err.message,'error')}return}composer.classList.add('is-recording-active');bar.classList.remove('hidden');bar.innerHTML=`<div class="voice-rec-live"><span class="voice-pulse-dot"></span><span class="voice-timer">00:00</span><span class="voice-rec-hint">جارٍ تسجيل رسالة صوتية...</span></div><div class="voice-rec-actions"><button type="button" class="btn-voice-cancel" aria-label="إلغاء التسجيل">🗑️ إلغاء</button><button type="button" class="btn-voice-stop" aria-label="إيقاف التسجيل">⏹️ إيقاف</button></div>`;audioChunks=[];try{mediaRecorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream)}catch(e){mediaRecorder=new MediaRecorder(stream)}mediaRecorder.ondataavailable=ev=>{if(ev.data&&ev.data.size>0)audioChunks.push(ev.data)};secondsElapsed=0;timerInterval=setInterval(()=>{secondsElapsed++;const m=Math.floor(secondsElapsed/60),s=secondsElapsed%60;const timerEl=bar.querySelector('.voice-timer');if(timerEl)timerEl.textContent=`${m<10?'0':''}${m}:${s<10?'0':''}${s}`;if(secondsElapsed>=maxDuration){stopRecording()}},1000);const cancelBtn=bar.querySelector('.btn-voice-cancel'),stopBtn=bar.querySelector('.btn-voice-stop');cancelBtn.onclick=()=>resetComposer();function stopRecording(){clearInterval(timerInterval);timerInterval=null;if(mediaRecorder&&mediaRecorder.state!=='inactive'){mediaRecorder.onstop=()=>{cleanupStream();if(secondsElapsed<1){toast('التسجيل قصير جداً');resetComposer();return}audioBlob=new Blob(audioChunks,{type:mime||'audio/webm'});showPreview(mime)};mediaRecorder.stop()}else{cleanupStream();resetComposer()}}stopBtn.onclick=()=>stopRecording();mediaRecorder.start(250)};function showPreview(mime){previewUrl=URL.createObjectURL(audioBlob);previewAudio=new Audio(previewUrl);bar.innerHTML=`<div class="voice-preview-box"><button type="button" class="btn-preview-play" aria-label="تشغيل المعاينة"><svg class="preview-ic-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg class="preview-ic-pause hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button><div class="voice-preview-track-wrap"><div class="voice-preview-track"><div class="voice-preview-fill" style="width:0%"></div></div><span class="voice-preview-time">0:00 / ${formatAudioTime(secondsElapsed)}</span></div><div class="voice-preview-actions"><button type="button" class="btn-preview-rerecord" title="إعادة التسجيل">🔄 إعادة</button><button type="button" class="btn-preview-discard" title="إلغاء">✕ إلغاء</button><button type="button" class="btn-preview-send" title="إرسال">إرسال ➤</button></div></div>`;const playBtn=bar.querySelector('.btn-preview-play'),playIc=bar.querySelector('.preview-ic-play'),pauseIc=bar.querySelector('.preview-ic-pause'),fill=bar.querySelector('.voice-preview-fill'),timeEl=bar.querySelector('.voice-preview-time'),rerecordBtn=bar.querySelector('.btn-preview-rerecord'),discardBtn=bar.querySelector('.btn-preview-discard'),sendBtn=bar.querySelector('.btn-preview-send');playBtn.onclick=()=>{if(!previewAudio)return;if(previewAudio.paused){if(window._currentPlayingAudio)window._currentPlayingAudio.pause();window._currentPlayingAudio=previewAudio;previewAudio.play();playIc.classList.add('hidden');pauseIc.classList.remove('hidden')}else{previewAudio.pause();playIc.classList.remove('hidden');pauseIc.classList.add('hidden')}};previewAudio.ontimeupdate=()=>{if(!previewAudio)return;const pct=previewAudio.duration?(previewAudio.currentTime/previewAudio.duration)*100:0;fill.style.width=pct+'%';timeEl.textContent=`${formatAudioTime(previewAudio.currentTime)} / ${formatAudioTime(secondsElapsed)}`};previewAudio.onended=()=>{playIc.classList.remove('hidden');pauseIc.classList.add('hidden');fill.style.width='0%';timeEl.textContent=`0:00 / ${formatAudioTime(secondsElapsed)}`};rerecordBtn.onclick=()=>{resetComposer();recordBtn.click()};discardBtn.onclick=()=>resetComposer();sendBtn.onclick=async()=>{sendBtn.disabled=true;sendBtn.textContent='جارٍ الإرسال...';try{const ext=(mime&&mime.includes('mp4'))?'mp4':(mime&&mime.includes('ogg'))?'ogg':'webm';const fd=new FormData();fd.append('audio',audioBlob,`voice-message.${ext}`);fd.append('duration',secondsElapsed);fd.append('client_event_id',crypto.randomUUID());await api(uploadEndpoint,{method:'POST',body:fd});resetComposer();toast('تم إرسال الرسالة الصوتية')}catch(err){toast(err.message,'error');sendBtn.disabled=false;sendBtn.textContent='إرسال ➤'}}}}function normalizeMessage(m) {
+async function openProject(id,pushRoute=true){closeStream();state.activeProjectId=Number(id);sessionStorage.setItem('gpack_active_project',id);if(pushRoute&&location.pathname!=='/project/'+id){history.pushState({projectId:id},'','/project/'+id);}let d;try{d=await api('/api/projects/'+id)}catch(err){  const v=$('#internal-view');if(v){v.innerHTML=`<div class="error-state"><h2>تعذر تحميل المشروع</h2><p>${esc(err.message)}</p><button class="btn btn-soft" onclick="exitProject()">العودة للمشاريع</button></div>`}  toast(err.message||'تعذر تحميل المشروع','error');return;}const p=d.project;state.project=d;const revisions=d.revisions||[],latestOptions=d.versions[0]?normalizeOptions(d.versions[0].options||[],d.files.filter(f=>f.version_id===d.versions[0].id)):[];document.querySelector('#internal-view').innerHTML=`<div class="workspace-top"><button class="back-button" onclick="state.tab='projects';renderInternal()">→ رجوع للمشاريع</button><div class="workspace-title"><span class="eyebrow">مساحة المشروع</span><h1>${esc(p.name)}</h1><div>${badge(p.status)} <span class="muted">${esc(d.client.name)}</span></div></div><button class="btn btn-gold" onclick="generateAccess(${p.id},'${esc(d.client.phone||'')}','${esc(d.client.name||'')}')">رابط العميل</button></div><div class="workspace-grid"><aside class="workspace-side panel"><h3>الموجز</h3><p class="brief-text">${esc(p.brief||p.description||'لم تتم إضافة موجز بعد')}</p>${renderWorkspaceFilesPanel(d.files)}</aside><section class="panel workspace-chat"><div class="section-heading"><h2>المحادثة</h2><span class="live-pill"><i></i> مباشرة</span></div><div class="messages" id="messages"></div><form class="composer" id="internal-composer"><input type="file" id="internal-file" hidden accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,text/plain,application/zip,application/x-zip-compressed,application/x-rar-compressed,application/illustrator,application/postscript,application/x-photoshop,image/vnd.adobe.photoshop"><button type="button" class="attach-button" id="internal-attach" aria-label="إرفاق ملف" title="إرفاق ملف"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.49-8.49a4 4 0 0 1 5.66 5.66l-8.5 8.5a2 2 0 0 1-2.83-2.83l7.78-7.78"/></svg></button><input name="body" placeholder="اكتب رسالة أو أرفق ملفاً..." autocomplete="off"><button type="button" class="voice-record-btn" id="internal-voice-btn" aria-label="تسجيل رسالة صوتية" title="تسجيل رسالة صوتية"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button><button class="send-button" aria-label="إرسال">➤</button><div id="internal-attachment" class="attachment-preview hidden"></div><div id="internal-voice-bar" class="voice-composer-bar hidden"></div></form></section><aside class="workspace-review panel"><div class="section-heading"><h2>آخر نسخة</h2>${d.versions[0]?`<span class="version-pill">V${d.versions[0].number}</span>`:''}</div>${d.versions[0]?`<div class="internal-preview">${internalPreview(d)}</div><p class="version-note">${esc(d.versions[0].notes||'بدون ملاحظات')}</p>${latestOptions.length?'<div class="designer-options"><b class="designer-options-title">خيارات التصميم</b><div class="designer-options-grid">'+latestOptions.map((o,i)=>{const isSel=o.status==='SELECTED';const isApp=o.status==='APPROVED';return `<div class="designer-option-card ${isSel?'is-selected':''} ${isApp?'is-approved':''}"><div class="option-preview">${optionImage(o)}</div><strong>${formatOptionName(o.name)||('الخيار '+(i+1))}</strong><small>${esc(o.name)}</small><span class="designer-option-status-badge ${isSel?'status-selected':isApp?'status-approved':'status-proposed'}">${isSel?'مختار للمراجعة':isApp?'معتمد':'مقترح'}</span></div>`}).join('')+'</div></div>':''}${state.user.role==='DESIGNER'?(p.status==='NEW_TASK'?'<button class="btn btn-gold btn-block" onclick="startProject('+p.id+')">بدء التنفيذ</button>':'<button class="btn btn-primary btn-block" onclick="uploadVersion('+p.id+')">تسليم التصميم</button>'):''}`:'<div class="empty-state"><h3>لم يتم تسليم تصميم رسمي بعد</h3><p>مرفقات المحادثة تبقى في الملفات فقط. استخدم زر تسليم التصميم لإرسال V1 للعميل.</p></div>'+ (state.user.role==='DESIGNER'?(p.status==='NEW_TASK'?'<button class="btn btn-gold btn-block" onclick="startProject('+p.id+')">بدء التنفيذ</button>':'<button class="btn btn-primary btn-block" onclick="uploadVersion('+p.id+')">تسليم التصميم V1</button>'):'')}<h3>طلبات التعديل</h3>${revisions.map(r=>`<div class="revision-card"><b>تعديل على V${r.version_number}${r.option_name?' — '+esc(formatOptionName(r.option_name)):''}</b><p>${esc(r.request)}</p>${r.file_url?`<div class="revision-audio-wrap" style="margin:6px 0;"><audio controls src="${esc(r.file_url)}" style="width:100%;height:32px;border-radius:4px;"></audio></div>`:''}<small>${fmt(r.created_at)}</small></div>`).join('')||'<div class="compact-empty">لا توجد طلبات تعديل</div>'}</aside></div>`;const ms=await api('/api/projects/'+id+'/messages');$('#messages').innerHTML='';ms.forEach(appendMessage);$('#internal-attach').onclick=()=>$('#internal-file').click();setupAttachmentPreview($('#internal-file'),$('#internal-attachment'));$('#internal-composer').onsubmit=async e=>{e.preventDefault();const input=e.target.body,file=$('#internal-file').files[0];if(!input.value.trim()&&!file)return;const sendBtn=e.target.querySelector('.send-button');if(sendBtn)sendBtn.disabled=true;try{if(file){const fd=new FormData();fd.append('file',file);if(input.value.trim())fd.append('body',input.value.trim());fd.append('client_event_id',crypto.randomUUID());const resMsg=await api('/api/projects/'+id+'/messages/attachment',{method:'POST',body:fd});if(resMsg){appendMessage(resMsg);syncProjectFileFromMessage(resMsg);}}else{const resMsg=await api('/api/projects/'+id+'/messages',{method:'POST',body:JSON.stringify({body:input.value.trim(),client_event_id:crypto.randomUUID()})});if(resMsg)appendMessage(resMsg);}e.target.reset();$('#internal-file').value='';const box=$('#internal-attachment');if(box){box.classList.add('hidden');box.innerHTML=''}toast('تم الإرسال')}catch(x){toast(x.message||'تعذر إرسال المرفق','error')}finally{if(sendBtn)sendBtn.disabled=false}};setupVoiceComposer({composer:$('#internal-composer'),recordBtn:$('#internal-voice-btn'),bar:$('#internal-voice-bar'),uploadEndpoint:'/api/projects/'+id+'/messages/voice'});openStream('/api/projects/'+id+'/stream',x=>{if(x.type==='message'){appendMessage(x.message);if(x.message&&x.message.file_id)syncProjectFileFromMessage(x.message);}else if(x.type==='file'){if(x.file)syncProjectFileFromMessage({file_id:x.file.id,original_name:x.file.original_name,mime:x.file.mime,file_size:x.file.size,created_at:x.file.created_at,sender_type:x.file.uploaded_by_type});else openProject(id,false);}else if(['version','revision','approved','status','option'].includes(x.type))openProject(id,false)})}function fileItem(f){return`<div class="file-item"><span class="file-icon">${f.mime.startsWith('image/')?'▧':'▤'}</span><span><b>${esc(f.original_name)}</b><small>${f.uploaded_by_type==='CLIENT'?'ملف من العميل':'ملف من المصمم'} · ${Math.ceil(f.size/1024)} KB</small></span><a href="/api/files/${f.id}" target="_blank">فتح</a></div>`}function internalPreview(d){const f=d.files.find(x=>x.version_id===d.versions[0].id&&x.mime.startsWith('image/'));return f?`<a href="/api/files/${f.id}" target="_blank"><img src="/api/files/${f.id}" alt="V${d.versions[0].number}"></a>`:'<span class="muted">ملف التصميم متاح ضمن الملفات</span>'}async function loadMessages(){const ms=await api('/api/projects/'+state.project.project.id+'/messages');$('#messages').innerHTML='';ms.forEach(appendMessage)}function openImageLightbox(url,name){let lightbox=document.getElementById('chat-image-lightbox');if(!lightbox){lightbox=document.createElement('div');lightbox.id='chat-image-lightbox';lightbox.className='chat-image-lightbox hidden';lightbox.innerHTML='<div class="chat-image-lightbox-backdrop"></div><div class="chat-image-lightbox-content"><div class="chat-image-lightbox-header"><span class="chat-image-lightbox-title"></span><div class="chat-image-lightbox-actions"><a href="#" target="_blank" download class="chat-image-lightbox-download" title="تحميل" aria-label="تحميل الصورة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a><button type="button" class="chat-image-lightbox-close" aria-label="إغلاق">✕</button></div></div><div class="chat-image-lightbox-body"><img src="" alt="" class="chat-image-lightbox-img"/></div></div>';document.body.appendChild(lightbox);lightbox.querySelector('.chat-image-lightbox-backdrop').onclick=()=>lightbox.classList.add('hidden');lightbox.querySelector('.chat-image-lightbox-close').onclick=()=>lightbox.classList.add('hidden');document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!lightbox.classList.contains('hidden'))lightbox.classList.add('hidden')})}lightbox.querySelector('.chat-image-lightbox-title').textContent=name||'';const img=lightbox.querySelector('.chat-image-lightbox-img');img.src=url;img.alt=name||'';const dl=lightbox.querySelector('.chat-image-lightbox-download');dl.href=url;dl.setAttribute('download',name||'image');lightbox.classList.remove('hidden')}function setupAttachmentPreview(fileInput,previewBox){if(!fileInput||!previewBox)return;fileInput.onchange=e=>{const f=e.target.files[0];if(!f){previewBox.classList.add('hidden');previewBox.innerHTML='';return}const isImg=f.type.startsWith('image/'),sizeStr=f.size>1024*1024?(f.size/(1024*1024)).toFixed(1)+' MB':Math.ceil(f.size/1024)+' KB',ext=f.name.includes('.')?f.name.split('.').pop().toUpperCase():'FILE';previewBox.classList.remove('hidden');if(isImg){const objUrl=URL.createObjectURL(f);previewBox.innerHTML='<div class="attachment-preview-card attachment-preview-img-card"><div class="attachment-preview-thumb-wrap"><img src="'+objUrl+'" alt="'+esc(f.name)+'" class="attachment-preview-thumb"/></div><div class="attachment-preview-info"><span class="attachment-preview-name" title="'+esc(f.name)+'">'+esc(f.name)+'</span><span class="attachment-preview-size">'+sizeStr+' • صورة</span></div><button type="button" class="attachment-preview-remove" aria-label="إلغاء المرفق" title="إلغاء المرفق">✕</button></div>'}else{previewBox.innerHTML='<div class="attachment-preview-card attachment-preview-doc-card"><div class="attachment-preview-file-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="attachment-preview-ext-badge">'+esc(ext.slice(0,4))+'</span></div><div class="attachment-preview-info"><span class="attachment-preview-name" title="'+esc(f.name)+'">'+esc(f.name)+'</span><span class="attachment-preview-size">'+sizeStr+' • ملف</span></div><button type="button" class="attachment-preview-remove" aria-label="إلغاء المرفق" title="إلغاء المرفق">✕</button></div>'}const removeBtn=previewBox.querySelector('.attachment-preview-remove');if(removeBtn){removeBtn.onclick=()=>{fileInput.value='';previewBox.classList.add('hidden');previewBox.innerHTML=''}}}}function formatAudioTime(s){const sec=Math.max(0,Math.floor(Number(s)||0)),m=Math.floor(sec/60),rem=sec%60;return`${m}:${rem<10?'0':''}${rem}`}function setupVoiceComposer(opts){const{composer,recordBtn,bar,uploadEndpoint}=opts;if(!composer||!recordBtn||!bar)return;let mediaRecorder=null,audioChunks=[],stream=null,timerInterval=null,secondsElapsed=0,audioBlob=null,previewAudio=null,previewUrl=null;const maxDuration=120;function cleanupStream(){if(stream){try{stream.getTracks().forEach(t=>t.stop())}catch(e){}stream=null}}function resetComposer(){clearInterval(timerInterval);timerInterval=null;cleanupStream();if(previewAudio){previewAudio.pause();previewAudio=null}if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null}mediaRecorder=null;audioChunks=[];secondsElapsed=0;audioBlob=null;bar.innerHTML='';bar.classList.add('hidden');composer.classList.remove('is-recording-active')}recordBtn.onclick=async e=>{e.preventDefault();if(!navigator.mediaDevices?.getUserMedia){toast('المتصفح الحالي لا يدعم تسجيل الصوت','error');return}let mime='';const candidates=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/aac'];for(const c of candidates){if(window.MediaRecorder&&MediaRecorder.isTypeSupported(c)){mime=c;break}}try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}catch(err){if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){toast('تم رفض إذن الوصول للميكروفون. يرجى السماح به من إعدادات المتصفح.','error')}else{toast('تعذر الوصول إلى الميكروفون: '+err.message,'error')}return}composer.classList.add('is-recording-active');bar.classList.remove('hidden');bar.innerHTML=`<div class="voice-rec-live"><span class="voice-pulse-dot"></span><span class="voice-timer">00:00</span><span class="voice-rec-hint">جارٍ تسجيل رسالة صوتية...</span></div><div class="voice-rec-actions"><button type="button" class="btn-voice-cancel" aria-label="إلغاء التسجيل">🗑️ إلغاء</button><button type="button" class="btn-voice-stop" aria-label="إيقاف التسجيل">⏹️ إيقاف</button></div>`;audioChunks=[];try{mediaRecorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream)}catch(e){mediaRecorder=new MediaRecorder(stream)}mediaRecorder.ondataavailable=ev=>{if(ev.data&&ev.data.size>0)audioChunks.push(ev.data)};secondsElapsed=0;timerInterval=setInterval(()=>{secondsElapsed++;const m=Math.floor(secondsElapsed/60),s=secondsElapsed%60;const timerEl=bar.querySelector('.voice-timer');if(timerEl)timerEl.textContent=`${m<10?'0':''}${m}:${s<10?'0':''}${s}`;if(secondsElapsed>=maxDuration){stopRecording()}},1000);const cancelBtn=bar.querySelector('.btn-voice-cancel'),stopBtn=bar.querySelector('.btn-voice-stop');cancelBtn.onclick=()=>resetComposer();function stopRecording(){clearInterval(timerInterval);timerInterval=null;if(mediaRecorder&&mediaRecorder.state!=='inactive'){mediaRecorder.onstop=()=>{cleanupStream();if(secondsElapsed<1){toast('التسجيل قصير جداً');resetComposer();return}audioBlob=new Blob(audioChunks,{type:mime||'audio/webm'});showPreview(mime)};mediaRecorder.stop()}else{cleanupStream();resetComposer()}}stopBtn.onclick=()=>stopRecording();mediaRecorder.start(250)};function showPreview(mime){previewUrl=URL.createObjectURL(audioBlob);previewAudio=new Audio(previewUrl);bar.innerHTML=`<div class="voice-preview-box"><button type="button" class="btn-preview-play" aria-label="تشغيل المعاينة"><svg class="preview-ic-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg class="preview-ic-pause hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button><div class="voice-preview-track-wrap"><div class="voice-preview-track"><div class="voice-preview-fill" style="width:0%"></div></div><span class="voice-preview-time">0:00 / ${formatAudioTime(secondsElapsed)}</span></div><div class="voice-preview-actions"><button type="button" class="btn-preview-rerecord" title="إعادة التسجيل">🔄 إعادة</button><button type="button" class="btn-preview-discard" title="إلغاء">✕ إلغاء</button><button type="button" class="btn-preview-send" title="إرسال">إرسال ➤</button></div></div>`;const playBtn=bar.querySelector('.btn-preview-play'),playIc=bar.querySelector('.preview-ic-play'),pauseIc=bar.querySelector('.preview-ic-pause'),fill=bar.querySelector('.voice-preview-fill'),timeEl=bar.querySelector('.voice-preview-time'),rerecordBtn=bar.querySelector('.btn-preview-rerecord'),discardBtn=bar.querySelector('.btn-preview-discard'),sendBtn=bar.querySelector('.btn-preview-send');playBtn.onclick=()=>{if(!previewAudio)return;if(previewAudio.paused){if(window._currentPlayingAudio)window._currentPlayingAudio.pause();window._currentPlayingAudio=previewAudio;previewAudio.play();playIc.classList.add('hidden');pauseIc.classList.remove('hidden')}else{previewAudio.pause();playIc.classList.remove('hidden');pauseIc.classList.add('hidden')}};previewAudio.ontimeupdate=()=>{if(!previewAudio)return;const pct=previewAudio.duration?(previewAudio.currentTime/previewAudio.duration)*100:0;fill.style.width=pct+'%';timeEl.textContent=`${formatAudioTime(previewAudio.currentTime)} / ${formatAudioTime(secondsElapsed)}`};previewAudio.onended=()=>{playIc.classList.remove('hidden');pauseIc.classList.add('hidden');fill.style.width='0%';timeEl.textContent=`0:00 / ${formatAudioTime(secondsElapsed)}`};rerecordBtn.onclick=()=>{resetComposer();recordBtn.click()};discardBtn.onclick=()=>resetComposer();sendBtn.onclick=async()=>{sendBtn.disabled=true;sendBtn.textContent='جارٍ الإرسال...';try{const ext=(mime&&mime.includes('mp4'))?'mp4':(mime&&mime.includes('ogg'))?'ogg':'webm';const fd=new FormData();fd.append('audio',audioBlob,`voice-message.${ext}`);fd.append('duration',secondsElapsed);fd.append('client_event_id',crypto.randomUUID());await api(uploadEndpoint,{method:'POST',body:fd});resetComposer();toast('تم إرسال الرسالة الصوتية')}catch(err){toast(err.message,'error');sendBtn.disabled=false;sendBtn.textContent='إرسال ➤'}}}}function normalizeMessage(m) {
   if (!m || typeof m !== 'object') {
     if (typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
       console.warn('[Realtime Diagnostic] Received non-object message event:', m);
@@ -355,71 +355,272 @@ window.setClientFilesTab = function(tab) {
   }
 };
 
+function scrollToDesignMessage(versionId, optionId){
+  const container = $('#messages');
+  if(!container) return;
+  let target = null;
+  if(versionId && optionId){
+    target = container.querySelector('[data-bubble-id="design-bubble-' + versionId + '-' + optionId + '"]');
+  }
+  if(!target && versionId){
+    target = container.querySelector('[data-version-id="' + versionId + '"]');
+  }
+  if(!target && versionId){
+    const bubbles = container.querySelectorAll('.message-design-bubble');
+    for(const b of bubbles){
+      if(b.textContent.includes('الإصدار V' + versionId)){
+        target = b;
+        break;
+      }
+    }
+  }
+  if(target){
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.remove('chat-item-highlight');
+    void target.offsetWidth;
+    target.classList.add('chat-item-highlight');
+    setTimeout(()=>{
+      target.classList.remove('chat-item-highlight');
+    }, 2500);
+  } else {
+    toast('الإصدار المطلوب معروض في المحادثة أعلاه', 'info');
+  }
+}
+
 function appendMessage(rawM){
-const m=normalizeMessage(rawM);if(!m)return;
-const container=$('#messages');if(!container||!m)return;if(m.id&&container.querySelector(`[data-id="${m.id}"]`))return;if(m.client_event_id&&container.querySelector(`[data-event-id="${m.client_event_id}"]`))return;const lastEl=container.lastElementChild,prevSenderType=lastEl?.dataset?.senderType,isConsecutive=prevSenderType===m.sender_type,inPortal=!!state.portal,isClient=m.sender_type==='CLIENT',isMine=inPortal?isClient:((state.user&&m.sender_type===state.user.role)||(state.user&&state.user.role==='ADMIN'&&(m.sender_type==='ADMIN'||m.sender_type==='DESIGNER'))||(!state.user&&!isClient));let senderLabel='';if(!isMine&&!isConsecutive){if(inPortal){senderLabel=m.sender_type==='ADMIN'?'إدارة G.PACK':(m.sender_name?`المصمم · ${m.sender_name}`:'المصمم')}else{senderLabel=m.sender_name?`العميل · ${m.sender_name}`:'العميل'}}const timeFormatted=m.created_at?new Date(m.created_at).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'';const el=document.createElement('div');el.className=`message ${isClient?'message-client':'message-designer'} ${isMine?'message-mine mine':'message-theirs theirs'} ${isConsecutive?'is-consecutive':''} ${m.type==='AUDIO'?'message-voice':''} ${m.type==='IMAGE'?'message-image':''} ${m.type==='FILE'?'message-file':''}`;el.dataset.senderType=m.sender_type;if(m.id)el.dataset.id=m.id;if(m.client_event_id)el.dataset.eventId=m.client_event_id;let contentHtml='';if(m.type==='REVISION'||m.revision_id){const optTitle=m.option_name?formatOptionName(m.option_name):'التصميم';const verTitle=m.version_number?` — الإصدار V${m.version_number}`:'';const cardTitle=`${optTitle}${verTitle}`;const notesText=m.body&&!m.body.startsWith('طلب تعديل')&&m.body!=='تعليق صوتي'?m.body:(m.body&&m.body.includes('ملاحظات العميل: ')&&!m.body.includes('تعليق صوتي مرفق')?m.body.split('ملاحظات العميل: ')[1]:'');const audioUrl=m.file_url||(m.file_id?`/api/files/${m.file_id}`:'');const durStr=formatAudioTime(m.duration||0);contentHtml=`<div class="chat-structured-card chat-structured-revision" data-revision-request-id="${esc(m.revision_id||'')}" data-version-id="${esc(m.version_id||'')}" data-design-option-id="${esc(m.option_id||'')}"><div class="chat-structured-header"><span class="chat-structured-badge revision-badge">🔴 طلب تعديل</span><strong class="chat-structured-title">${esc(cardTitle)}</strong></div>${notesText?`<div class="chat-structured-notes"><span class="chat-structured-label">الملاحظات:</span><p>${esc(notesText)}</p></div>`:''}${audioUrl?`<div class="chat-structured-voice-wrap" data-url="${esc(audioUrl)}"><div class="chat-structured-voice-label">🎙️ تعليق صوتي مرفق</div><div class="message-voice-bubble" data-url="${esc(audioUrl)}"><button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي"><svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg class="icon-pause hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button><div class="voice-bubble-main"><div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div><div class="voice-seek-thumb" style="left:0%"></div></div><div class="voice-bubble-meta"><span class="voice-bubble-time">0:00 / ${durStr}</span><span class="voice-mic-icon" title="رسالة صوتية"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></span></div></div><audio preload="metadata" src="${esc(audioUrl)}"></audio></div></div>`:''}<div class="chat-structured-footer"><span class="chat-structured-time">${timeFormatted}</span></div></div>`;}else if(m.type==='AUDIO'){const durStr=formatAudioTime(m.duration||0);const audioUrl=m.file_url||(m.file_id?`/api/files/${m.file_id}`:'');contentHtml=`<div class="message-voice-bubble" data-url="${esc(audioUrl)}"><button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي"><svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg><svg class="icon-pause hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button><div class="voice-bubble-main"><div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div><div class="voice-seek-thumb" style="left:0%"></div></div><div class="voice-bubble-meta"><span class="voice-bubble-time">0:00 / ${durStr}</span><span class="voice-mic-icon" title="رسالة صوتية"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></span></div></div><audio preload="metadata" src="${esc(audioUrl)}"></audio></div>`}else if(m.type==='IMAGE'){const imgUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');const fileName=m.original_name||m.body||'صورة';const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;contentHtml='<div class="message-image-bubble"><div class="message-image-wrap" data-img-url="'+esc(imgUrl)+'" data-img-name="'+esc(fileName)+'"><img src="'+esc(imgUrl)+'" alt="'+esc(fileName)+'" class="message-chat-image" loading="lazy"/><button type="button" class="message-image-zoom-btn" aria-label="تكبير الصورة"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button></div>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>'}else if(m.type==='FILE'){const fileUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');const fileName=m.original_name||m.body||'ملف مرفق';const sizeStr=m.file_size?(m.file_size>1024*1024?(m.file_size/(1024*1024)).toFixed(1)+' MB':Math.ceil(m.file_size/1024)+' KB'):'';const ext=fileName.includes('.')?fileName.split('.').pop().toUpperCase():'FILE';const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;contentHtml='<div class="message-file-bubble"><a href="'+esc(fileUrl)+'" target="_blank" download="'+esc(fileName)+'" class="message-file-card"><div class="message-file-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="message-file-ext-tag">'+esc(ext.slice(0,4))+'</span></div><div class="message-file-info"><span class="message-file-name" title="'+esc(fileName)+'">'+esc(fileName)+'</span>'+(sizeStr?'<span class="message-file-size">'+esc(sizeStr)+'</span>':'')+'</div><div class="message-file-action" title="تحميل"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div></a>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>'}else{const bodyText=m.body||'';
-if(m.type==='REVISION'){
-  const optTitle=m.option_name?formatOptionName(m.option_name):'التصميم';
-  const verTitle=m.version_number?` — الإصدار V${m.version_number}`:'';
-  const cardTitle=`${optTitle}${verTitle}`;
-  const notesText=m.body&&m.body!=='تعليق صوتي'&&m.body!=='طلب تعديل'?m.body:'';
-  const audioUrl=m.file_url||(m.file_id?`/api/files/${m.file_id}`:'');
-  const durStr=formatAudioTime(m.duration||0);
-  contentHtml=`
-    <div class="chat-structured-card chat-structured-revision" 
-         data-revision-request-id="${esc(m.revision_id||'')}"
-         data-version-id="${esc(m.version_id||'')}"
-         data-design-option-id="${esc(m.option_id||'')}">
-      <div class="chat-structured-header">
-        <span class="chat-structured-badge revision-badge">🔴 طلب تعديل</span>
-        <strong class="chat-structured-title">${esc(cardTitle)}</strong>
-      </div>
-      ${notesText?`<div class="chat-structured-notes"><span class="chat-structured-label">النص:</span> ${esc(notesText)}</div>`:''}
-      ${audioUrl?`
-        <div class="chat-structured-voice-wrap">
-          <span class="chat-structured-label">🎙️ تعليق صوتي:</span>
-          <div class="message-voice-bubble" data-url="${esc(audioUrl)}">
-            <button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي">
-              <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-              <svg class="icon-pause hidden" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            </button>
-            <div class="voice-bubble-main">
-              <div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
-                <div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div>
-                <div class="voice-seek-thumb" style="left:0%"></div>
+  const m=normalizeMessage(rawM);if(!m)return;
+  const container=$('#messages');if(!container||!m)return;
+  if(m.id&&container.querySelector('[data-id="'+m.id+'"]'))return;
+  if(m.client_event_id&&container.querySelector('[data-event-id="'+m.client_event_id+'"]'))return;
+  const lastEl=container.lastElementChild,prevSenderType=lastEl?.dataset?.senderType,isConsecutive=prevSenderType===m.sender_type;
+  const inPortal=!!state.portal,isClient=m.sender_type==='CLIENT';
+  const isMine=inPortal?isClient:((state.user&&m.sender_type===state.user.role)||(state.user&&state.user.role==='ADMIN'&&(m.sender_type==='ADMIN'||m.sender_type==='DESIGNER'))||(!state.user&&!isClient));
+  let senderLabel='';
+  if(!isMine&&!isConsecutive){
+    if(inPortal){
+      senderLabel=m.sender_type==='ADMIN'?'إدارة G.PACK':(m.sender_name?'المصمم · '+m.sender_name:'المصمم');
+    }else{
+      senderLabel=m.sender_name?'العميل · '+m.sender_name:'العميل';
+    }
+  }
+  const timeFormatted=m.created_at?new Date(m.created_at).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'';
+  const el=document.createElement('div');
+  el.className='message '+(isClient?'message-client':'message-designer')+' '+(isMine?'message-mine mine':'message-theirs theirs')+' '+(isConsecutive?'is-consecutive':'')+' '+(m.type==='AUDIO'?'message-voice':'')+' '+(m.type==='IMAGE'?'message-image':'')+' '+(m.type==='FILE'?'message-file':'')+' '+(m.type==='REVISION'?'message-revision':'');
+  el.dataset.senderType=m.sender_type;
+  if(m.id)el.dataset.id=m.id;
+  if(m.client_event_id)el.dataset.eventId=m.client_event_id;
+
+  let contentHtml='';
+  const isRevisionMsg=m.type==='REVISION'||!!m.revision_id||(m.body&&(m.body.startsWith('طلب تعديل — ')||m.body.startsWith('طلب تعديل [')));
+  const isApprovalMsg=m.type==='APPROVAL'||(m.body&&(m.body.startsWith('تم اعتماد التصميم — ')||m.body.startsWith('تم اعتماد التصميم [')));
+
+  if(isRevisionMsg){
+    let optTitle=m.option_name?formatOptionName(m.option_name):'';
+    let verNum=m.version_number?String(m.version_number):'';
+    let notesText='';
+    const bodyText=m.body||'';
+
+    if(!optTitle||!verNum){
+      if(bodyText.startsWith('طلب تعديل — ')){
+        const lines=bodyText.split('\n');
+        const firstLine=lines[0].replace(/^طلب تعديل —\s*/,'');
+        const parts=firstLine.split(' — ');
+        if(!optTitle&&parts[0])optTitle=formatOptionName(parts[0]);
+        if(!verNum&&parts[1]){
+          const mVer=parts[1].match(/V?(\d+)/i);
+          if(mVer)verNum=mVer[1];
+        }
+      }else if(bodyText.startsWith('طلب تعديل [')){
+        const bEnd=bodyText.indexOf(']:');
+        const target=bEnd!==-1?bodyText.slice(10,bEnd):'';
+        const mVer=target.match(/V?(\d+)/i);
+        if(!verNum&&mVer)verNum=mVer[1];
+        if(!optTitle)optTitle=formatOptionName(target.replace(/V?\d+/i,'').trim());
+      }
+    }
+    if(!optTitle)optTitle='التصميم';
+    if(!verNum)verNum='1';
+
+    if(bodyText.includes('ملاحظات العميل: ')){
+      const rawNotes=bodyText.split('ملاحظات العميل: ')[1]||'';
+      if(rawNotes.trim()!=='تعليق صوتي مرفق'&&rawNotes.trim()!=='طلب تعديل'){
+        notesText=rawNotes.trim();
+      }
+    }else if(!bodyText.startsWith('طلب تعديل')&&bodyText!=='تعليق صوتي'){
+      notesText=bodyText.trim();
+    }
+
+    const audioUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');
+    const durStr=formatAudioTime(m.duration||0);
+
+    contentHtml=`
+      <div class="chat-structured-card chat-structured-revision" 
+           data-revision-request-id="${esc(m.revision_id||'')}"
+           data-version-id="${esc(m.version_id||'')}"
+           data-design-option-id="${esc(m.option_id||'')}">
+        <div class="chat-structured-header">
+          <span class="chat-structured-badge revision-badge">🔴 طلب تعديل</span>
+        </div>
+        <div class="chat-structured-target-line">
+          <span class="chat-structured-target-prefix">على:</span>
+          <strong class="chat-structured-target-name">${esc(optTitle)} · الإصدار V${verNum}</strong>
+        </div>
+        ${notesText?`
+          <div class="chat-structured-notes">
+            <span class="chat-structured-label">الملاحظات:</span>
+            <p class="chat-structured-notes-body">${esc(notesText)}</p>
+          </div>
+        `:''}
+        ${audioUrl?`
+          <div class="chat-structured-voice-wrap" data-url="${esc(audioUrl)}">
+            <div class="chat-structured-voice-label">🎙️ التعليق الصوتي</div>
+            <div class="message-voice-bubble" data-url="${esc(audioUrl)}">
+              <button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي">
+                <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                <svg class="icon-pause hidden" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+              <div class="voice-bubble-main">
+                <div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+                  <div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div>
+                  <div class="voice-seek-thumb" style="left:0%"></div>
+                </div>
+                <div class="voice-bubble-meta">
+                  <span class="voice-bubble-time">0:00 / ${durStr}</span>
+                  <span class="voice-mic-icon" title="رسالة صوتية">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                  </span>
+                </div>
               </div>
-              <div class="voice-bubble-meta">
-                <span class="voice-bubble-time">0:00 / ${durStr}</span>
-              </div>
+              <audio preload="metadata" src="${esc(audioUrl)}"></audio>
             </div>
-            <audio preload="metadata" src="${esc(audioUrl)}"></audio>
+          </div>
+        `:''}
+        <div class="chat-structured-footer">
+          <span class="chat-structured-time">${esc(timeFormatted)}</span>
+        </div>
+      </div>
+    `;
+  }else if(isApprovalMsg){
+    let target='';
+    const bodyText=m.body||'';
+    if(m.option_name&&m.version_number){
+      target=formatOptionName(m.option_name)+' · الإصدار V'+m.version_number;
+    }else if(bodyText.startsWith('تم اعتماد التصميم — ')){
+      target=bodyText.replace(/^تم اعتماد التصميم —\s*/,'').replace(/\s*✅\s*$/,'').replace(/\s*—\s*/g,' · ');
+    }else{
+      const bEnd=bodyText.indexOf(']');
+      target=bEnd!==-1?bodyText.slice(19,bEnd):'التصميم';
+    }
+    contentHtml=`
+      <div class="chat-structured-card chat-structured-approval">
+        <div class="chat-structured-header">
+          <span class="chat-structured-badge approved">🟢 تم اعتماد التصميم</span>
+        </div>
+        <div class="chat-structured-target-line">
+          <span class="chat-structured-target-prefix">الخيار:</span>
+          <strong class="chat-structured-target-name">${esc(target)}</strong>
+        </div>
+        <div class="chat-structured-notes" style="background:transparent;padding:4px 0 0;font-weight:700;color:#15803d;">
+          اعتمد العميل ${esc(target)} ✅
+        </div>
+        <div class="chat-structured-footer">
+          <span class="chat-structured-time">${esc(timeFormatted)}</span>
+        </div>
+      </div>
+    `;
+  }else if(m.type==='AUDIO'){
+    const durStr=formatAudioTime(m.duration||0);
+    const audioUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');
+    contentHtml=`
+      <div class="message-voice-bubble" data-url="${esc(audioUrl)}">
+        <button type="button" class="voice-play-btn" aria-label="تشغيل التسجيل الصوتي">
+          <svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          <svg class="icon-pause hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <div class="voice-bubble-main">
+          <div class="voice-seek-bar" role="slider" aria-label="شريط تقديم التسجيل الصوتي" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+            <div class="voice-seek-track"><div class="voice-seek-fill" style="width:0%"></div></div>
+            <div class="voice-seek-thumb" style="left:0%"></div>
+          </div>
+          <div class="voice-bubble-meta">
+            <span class="voice-bubble-time">0:00 / ${durStr}</span>
+            <span class="voice-mic-icon" title="رسالة صوتية">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            </span>
           </div>
         </div>
-      `:''}
-    </div>
-  `;
-} else if(bodyText.startsWith('طلب تعديل — ') || bodyText.startsWith('طلب تعديل [')){
-  let target='', notes='';
-  if(bodyText.startsWith('طلب تعديل — ')){
-    const lines=bodyText.split('\n');
-    target=lines[0].replace(/^طلب تعديل —\s*/, '');
-    notes=lines.slice(1).join('\n').replace(/^ملاحظات العميل:\s*/, '').trim();
-  } else {
-    const bEnd=bodyText.indexOf(']:');
-    target=bEnd!==-1?bodyText.slice(10,bEnd):'التصميم';
-    notes=bEnd!==-1?bodyText.slice(bEnd+2).trim():bodyText;
+        <audio preload="metadata" src="${esc(audioUrl)}"></audio>
+      </div>
+    `;
+  }else if(m.type==='IMAGE'){
+    const imgUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');
+    const fileName=m.original_name||m.body||'صورة';
+    const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;
+    contentHtml='<div class="message-image-bubble"><div class="message-image-wrap" data-img-url="'+esc(imgUrl)+'" data-img-name="'+esc(fileName)+'"><img src="'+esc(imgUrl)+'" alt="'+esc(fileName)+'" class="message-chat-image" loading="lazy"/><button type="button" class="message-image-zoom-btn" aria-label="تكبير الصورة"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button></div>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>';
+  }else if(m.type==='FILE'){
+    const fileUrl=m.file_url||(m.file_id?'/api/files/'+m.file_id:'');
+    const fileName=m.original_name||m.body||'ملف مرفق';
+    const sizeStr=m.file_size?(m.file_size>1024*1024?(m.file_size/(1024*1024)).toFixed(1)+' MB':Math.ceil(m.file_size/1024)+' KB'):'';
+    const ext=fileName.includes('.')?fileName.split('.').pop().toUpperCase():'FILE';
+    const hasCustomCap=m.body&&m.body!==m.original_name&&m.body!==fileName;
+    contentHtml='<div class="message-file-bubble"><a href="'+esc(fileUrl)+'" target="_blank" download="'+esc(fileName)+'" class="message-file-card"><div class="message-file-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="message-file-ext-tag">'+esc(ext.slice(0,4))+'</span></div><div class="message-file-info"><span class="message-file-name" title="'+esc(fileName)+'">'+esc(fileName)+'</span>'+(sizeStr?'<span class="message-file-size">'+esc(sizeStr)+'</span>':'')+'</div><div class="message-file-action" title="تحميل"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div></a>'+(hasCustomCap?'<div class="message-attachment-caption">'+esc(m.body)+'</div>':'')+'</div>';
+  }else{
+    contentHtml='<div class="message-bubble-body">'+esc(m.body||'')+'</div>';
   }
-  contentHtml=`<div class="chat-structured-card chat-structured-revision"><div class="chat-structured-header"><span class="chat-structured-badge">طلب تعديل 🔄</span><strong class="chat-structured-title">${esc(target)}</strong></div><div class="chat-structured-notes">${esc(notes)}</div></div>`;
-} else if(bodyText.startsWith('تم اعتماد التصميم — ') || bodyText.startsWith('تم اعتماد التصميم [')){
-  let target='';
-  if(bodyText.startsWith('تم اعتماد التصميم — ')){
-    target=bodyText.replace(/^تم اعتماد التصميم —\s*/, '').replace(/\s*✅\s*$/, '');
-  } else {
-    const bEnd=bodyText.indexOf(']');
-    target=bEnd!==-1?bodyText.slice(19,bEnd):'التصميم';
+
+  el.innerHTML=`${senderLabel?'<div class="message-sender-name">'+esc(senderLabel)+'</div>':''}${contentHtml}<div class="message-meta"><time datetime="${esc(m.created_at||'')}" class="message-time">${esc(timeFormatted)}</time></div>`;
+
+  // Audio wiring for AUDIO or REVISION voice
+  const audioEl=el.querySelector('audio');
+  if(audioEl){
+    const playBtn=el.querySelector('.voice-play-btn'),iconPlay=el.querySelector('.icon-play'),iconPause=el.querySelector('.icon-pause'),fill=el.querySelector('.voice-seek-fill'),thumb=el.querySelector('.voice-seek-thumb'),timeText=el.querySelector('.voice-bubble-time'),seekBar=el.querySelector('.voice-seek-bar'),durTotal=Number(m.duration)||0;
+    if(playBtn){
+      playBtn.onclick=()=>{
+        if(audioEl.paused){
+          if(window._currentPlayingAudio&&window._currentPlayingAudio!==audioEl){window._currentPlayingAudio.pause();}
+          window._currentPlayingAudio=audioEl;
+          audioEl.play().catch(e=>{console.error('Audio playback error',e);toast('تعذر تشغيل الصوت','error');});
+        }else{
+          audioEl.pause();
+        }
+      };
+      audioEl.onplay=()=>{if(iconPlay)iconPlay.classList.add('hidden');if(iconPause)iconPause.classList.remove('hidden');};
+      audioEl.onpause=()=>{if(iconPlay)iconPlay.classList.remove('hidden');if(iconPause)iconPause.classList.add('hidden');};
+      audioEl.ontimeupdate=()=>{
+        const total=audioEl.duration&&!isNaN(audioEl.duration)?audioEl.duration:durTotal;
+        const cur=audioEl.currentTime||0;
+        const pct=total>0?Math.min(100,(cur/total)*100):0;
+        if(fill)fill.style.width=pct+'%';
+        if(thumb)thumb.style.left=pct+'%';
+        if(timeText)timeText.textContent=formatAudioTime(cur)+' / '+formatAudioTime(total);
+      };
+      audioEl.onended=()=>{
+        if(iconPlay)iconPlay.classList.remove('hidden');
+        if(iconPause)iconPause.classList.add('hidden');
+        if(fill)fill.style.width='0%';
+        if(thumb)thumb.style.left='0%';
+        if(timeText)timeText.textContent='0:00 / '+formatAudioTime(audioEl.duration||durTotal);
+      };
+      if(seekBar){
+        seekBar.onclick=e=>{
+          const rect=seekBar.getBoundingClientRect();
+          const clickPos=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+          const total=audioEl.duration&&!isNaN(audioEl.duration)?audioEl.duration:durTotal;
+          if(total>0){audioEl.currentTime=clickPos*total;}
+        };
+      }
+    }
   }
-  contentHtml=`<div class="chat-structured-card chat-structured-approval"><div class="chat-structured-header"><span class="chat-structured-badge approved">اعتماد نهائي ✅</span><strong class="chat-structured-title">${esc(target)}</strong></div><div class="chat-structured-notes" style="background:transparent;padding:2px 0;font-weight:700;color:#15803d;">تم اعتماد هذا التصميم بنجاح من قبل العميل ✅</div></div>`;
-} else if(false){const bEnd=bodyText.indexOf(']:');if(bEnd!==-1){const target=bodyText.slice(10,bEnd),notes=bodyText.slice(bEnd+2).trim();contentHtml=`<div class="chat-structured-card chat-structured-revision"><span class="chat-structured-badge">طلب تعديل</span><strong class="chat-structured-title">${esc(target)}</strong><div class="chat-structured-notes">${esc(notes)}</div></div>`;}else{contentHtml='<div class="message-bubble-body">'+esc(bodyText)+'</div>';}}else if(bodyText.startsWith('تم اعتماد التصميم [')){const bEnd=bodyText.indexOf(']');if(bEnd!==-1){const target=bodyText.slice(19,bEnd);contentHtml=`<div class="chat-structured-card chat-structured-approval"><span class="chat-structured-badge approved">اعتماد نهائي ✓</span><strong class="chat-structured-title">${esc(target)}</strong><div class="chat-structured-notes" style="background:transparent;padding:2px 0;font-weight:700;color:#15803d;">تم اعتماد هذا التصميم بنجاح من قبل العميل ✅</div></div>`;}else{contentHtml='<div class="message-bubble-body">'+esc(bodyText)+'</div>';}}else{contentHtml='<div class="message-bubble-body">'+esc(bodyText)+'</div>';}}el.innerHTML=`${senderLabel?`<div class="message-sender-name">${esc(senderLabel)}</div>`:''}${contentHtml}<div class="message-meta"><time datetime="${esc(m.created_at||'')}" class="message-time">${esc(timeFormatted)}</time></div>`;if(m.type==='AUDIO'){const audioEl=el.querySelector('audio'),playBtn=el.querySelector('.voice-play-btn'),iconPlay=el.querySelector('.icon-play'),iconPause=el.querySelector('.icon-pause'),fill=el.querySelector('.voice-seek-fill'),thumb=el.querySelector('.voice-seek-thumb'),timeText=el.querySelector('.voice-bubble-time'),seekBar=el.querySelector('.voice-seek-bar'),durTotal=Number(m.duration)||0;if(playBtn&&audioEl){playBtn.onclick=()=>{if(audioEl.paused){if(window._currentPlayingAudio&&window._currentPlayingAudio!==audioEl){window._currentPlayingAudio.pause()}window._currentPlayingAudio=audioEl;audioEl.play().catch(e=>{console.error('Audio playback error',e);toast('تعذر تشغيل الصوت','error')})}else{audioEl.pause()}};audioEl.onplay=()=>{iconPlay.classList.add('hidden');iconPause.classList.remove('hidden')};audioEl.onpause=()=>{iconPlay.classList.remove('hidden');iconPause.classList.add('hidden')};audioEl.ontimeupdate=()=>{const total=audioEl.duration&&!isNaN(audioEl.duration)?audioEl.duration:durTotal;const cur=audioEl.currentTime||0;const pct=total>0?Math.min(100,(cur/total)*100):0;if(fill)fill.style.width=pct+'%';if(thumb)thumb.style.left=pct+'%';if(timeText)timeText.textContent=`${formatAudioTime(cur)} / ${formatAudioTime(total)}`};audioEl.onended=()=>{iconPlay.classList.remove('hidden');iconPause.classList.add('hidden');if(fill)fill.style.width='0%';if(thumb)thumb.style.left='0%';if(timeText)timeText.textContent=`0:00 / ${formatAudioTime(audioEl.duration||durTotal)}`};if(seekBar){seekBar.onclick=e=>{const rect=seekBar.getBoundingClientRect();const clickPos=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));const total=audioEl.duration&&!isNaN(audioEl.duration)?audioEl.duration:durTotal;if(total>0){audioEl.currentTime=clickPos*total}}}}}if(m.type==='IMAGE'){const wrap=el.querySelector('.message-image-wrap');if(wrap)wrap.onclick=()=>openImageLightbox(wrap.dataset.imgUrl,wrap.dataset.imgName);}container.append(el);container.scrollTop=container.scrollHeight}async function startProject(id){try{await api('/api/projects/'+id+'/start',{method:'POST',body:'{}'});toast('بدأت مهمة التصميم');openProject(id)}catch(e){toast(e.message,'error')}}function uploadVersion(id){modal('تسليم التصميم','<div class="field"><label>ملاحظات النسخة</label><textarea name="notes" rows="3"></textarea></div><div class="field"><label>أسماء الخيارات (اختياري)</label><input name="options" placeholder="الخيار A, الخيار B, الخيار C"></div><div class="field"><label>ملفات الخيار A</label><input name="option_0" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></div><div class="field"><label>ملفات الخيار B</label><input name="option_1" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></div><div class="field"><label>ملفات الخيار C</label><input name="option_2" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></div>',async f=>{const r=await fetch('/api/projects/'+id+'/versions',{method:'POST',body:f,credentials:'same-origin'});if(!r.ok)throw Error((await r.json()).error||'فشل رفع النسخة');return r.json()},'إرسال للمراجعة')}function normalizeSaudiPhone(value){let p=String(value||'').replace(/[^0-9+]/g,'');if(p.startsWith('00'))p='+'+p.slice(2);if(p.startsWith('+966'))p=p.slice(1);else if(p.startsWith('966'))p=p;else if(p.startsWith('05'))p='966'+p.slice(1);else if(p.startsWith('5'))p='966'+p;else return '';return /^9665[0-9]{8}$/.test(p)?p:''}async function generateAccess(id,phone='',clientName='العميل'){try{const d=await api('/api/projects/'+id+'/access',{method:'POST',body:'{}'}),url=new URL(d.url,location.origin).href,waPhone=normalizeSaudiPhone(phone),waText=encodeURIComponent(`مرحبًا،\n\nتم تجهيز بوابة خاصة لمتابعة مشروع التصميم الخاص بكم مع G.PACK.\n\nيمكنكم الدخول إلى المشروع ومتابعة التصميم والتواصل مع المصمم وطلب التعديلات واعتماد التصميم من خلال الرابط التالي:\n\n${url}\n\nمع تحيات فريق G.PACK`);modal('رابط بوابة العميل',`<p class="muted">شارك هذا الرابط مع ${esc(clientName)} للوصول إلى مشروعه.</p><div class="copy-link"><input id="portal-link" value="${esc(url)}" readonly><button type="button" onclick="copyPortalLink()">نسخ</button></div><div class="link-status"><span class="status status-approved"><i></i>الرابط نشط</span></div><div class="link-actions"><a class="btn btn-primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">فتح الرابط</a>${waPhone?`<a class="btn whatsapp-button" href="https://wa.me/${waPhone}?text=${waText}" target="_blank" rel="noopener noreferrer">إرسال عبر واتساب</a>`:'<button type="button" class="btn btn-soft" onclick="state.tab=\'clients\';renderInternal();toast(\'أضف رقم جوال العميل لاستخدام الإرسال عبر واتساب\')">إضافة رقم واتساب</button>'}</div><hr><button type="button" class="link-danger" onclick="regenerateAccess(${id},'${esc(phone)}','${esc(clientName)}')">تجديد الرابط</button><button type="button" class="link-danger" onclick="revokeAccess(${id})">إلغاء الوصول</button>`,async()=>{},'إغلاق')}catch(e){toast('تعذر إنشاء رابط العميل','error')}}async function copyPortalLink(){try{await navigator.clipboard.writeText($('#portal-link').value);toast('تم نسخ رابط العميل')}catch{toast('تعذر النسخ تلقائياً، حدّد الرابط وانسخه يدوياً','error')}}async function regenerateAccess(id,phone,name){if(!confirm('سيتم إلغاء الرابط الحالي وإنشاء رابط جديد. هل تريد المتابعة؟'))return;$('#modal')?.remove();generateAccess(id,phone,name)}async function revokeAccess(id){if(!confirm('لن يتمكن العميل من فتح البوابة بالرابط الحالي. هل تريد إلغاء الوصول؟'))return;try{await api('/api/projects/'+id+'/access/revoke',{method:'POST',body:'{}'});$('#modal')?.remove();toast('تم إلغاء وصول العميل');renderInternal()}catch(e){toast(e.message,'error')}}
+
+  if(m.type==='IMAGE'){
+    const wrap=el.querySelector('.message-image-wrap');
+    if(wrap)wrap.onclick=()=>openImageLightbox(wrap.dataset.imgUrl,wrap.dataset.imgName);
+  }
+
+  container.append(el);
+  container.scrollTop=container.scrollHeight;
+}
+async function startProject(id){try{await api('/api/projects/'+id+'/start',{method:'POST',body:'{}'});toast('بدأت مهمة التصميم');openProject(id)}catch(e){toast(e.message,'error')}}function uploadVersion(id){modal('تسليم التصميم','<div class="field"><label>ملاحظات النسخة</label><textarea name="notes" rows="3"></textarea></div><div class="field"><label>أسماء الخيارات (اختياري)</label><input name="options" placeholder="الخيار A, الخيار B, الخيار C"></div><div class="field"><label>ملفات الخيار A</label><input name="option_0" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></div><div class="field"><label>ملفات الخيار B</label><input name="option_1" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></div><div class="field"><label>ملفات الخيار C</label><input name="option_2" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></div>',async f=>{const r=await fetch('/api/projects/'+id+'/versions',{method:'POST',body:f,credentials:'same-origin'});if(!r.ok)throw Error((await r.json()).error||'فشل رفع النسخة');return r.json()},'إرسال للمراجعة')}function normalizeSaudiPhone(value){let p=String(value||'').replace(/[^0-9+]/g,'');if(p.startsWith('00'))p='+'+p.slice(2);if(p.startsWith('+966'))p=p.slice(1);else if(p.startsWith('966'))p=p;else if(p.startsWith('05'))p='966'+p.slice(1);else if(p.startsWith('5'))p='966'+p;else return '';return /^9665[0-9]{8}$/.test(p)?p:''}async function generateAccess(id,phone='',clientName='العميل',regenerate=false){try{const d=await api('/api/projects/'+id+'/access',{method:'POST',body:JSON.stringify({regenerate})}),url=new URL(d.url,location.origin).href,waPhone=normalizeSaudiPhone(phone),waText=encodeURIComponent(`مرحبًا،\n\nتم تجهيز بوابة خاصة لمتابعة مشروع التصميم الخاص بكم مع G.PACK.\n\nيمكنكم الدخول إلى المشروع ومتابعة التصميم والتواصل مع المصمم وطلب التعديلات واعتماد التصميم من خلال الرابط التالي:\n\n${url}\n\nمع تحيات فريق G.PACK`);modal('رابط بوابة العميل',`<p class="muted">شارك هذا الرابط مع ${esc(clientName)} للوصول إلى مشروعه.</p><div class="copy-link"><input id="portal-link" value="${esc(url)}" readonly><button type="button" onclick="copyPortalLink()">نسخ</button></div><div class="link-status"><span class="status status-approved"><i></i>الرابط نشط</span></div><div class="link-actions"><a class="btn btn-primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">فتح الرابط</a>${waPhone?`<a class="btn whatsapp-button" href="https://wa.me/${waPhone}?text=${waText}" target="_blank" rel="noopener noreferrer">إرسال عبر واتساب</a>`:'<button type="button" class="btn btn-soft" onclick="state.tab=\'clients\';renderInternal();toast(\'أضف رقم جوال العميل لاستخدام الإرسال عبر واتساب\')">إضافة رقم واتساب</button>'}</div><hr><button type="button" class="link-danger" onclick="regenerateAccess(${id},'${esc(phone)}','${esc(clientName)}')">تجديد الرابط</button><button type="button" class="link-danger" onclick="revokeAccess(${id})">إلغاء الوصول</button>`,async()=>{},'إغلاق')}catch(e){toast('تعذر إنشاء رابط العميل','error')}}async function copyPortalLink(){try{await navigator.clipboard.writeText($('#portal-link').value);toast('تم نسخ رابط العميل')}catch{toast('تعذر النسخ تلقائياً، حدّد الرابط وانسخه يدوياً','error')}}async function regenerateAccess(id,phone,name){if(!confirm('سيتم إلغاء الرابط الحالي وإنشاء رابط جديد. هل تريد المتابعة؟'))return;$('#modal')?.remove();generateAccess(id,phone,name,true)}async function revokeAccess(id){if(!confirm('لن يتمكن العميل من فتح البوابة بالرابط الحالي. هل تريد إلغاء الوصول؟'))return;try{await api('/api/projects/'+id+'/access/revoke',{method:'POST',body:'{}'});$('#modal')?.remove();toast('تم إلغاء وصول العميل');renderInternal()}catch(e){toast(e.message,'error')}}
 async function renderPortal(){
   try{
     const m=await api('/api/portal/me'),full=await api('/api/portal/'+m.project.id);
@@ -819,6 +1020,28 @@ function renderClientFileRow(f){
   </div>`;
 }
 
+function handleImageLoadRetry(img){
+  if(!img)return;
+  const retries=Number(img.dataset.retries||0);
+  if(retries<3){
+    img.dataset.retries=retries+1;
+    setTimeout(()=>{
+      const original=img.dataset.originalSrc||img.src.split('?')[0];
+      img.dataset.originalSrc=original;
+      img.src=`${original}?_retry=${Date.now()}`;
+    },1200*(retries+1));
+  }else{
+    img.style.display='none';
+    const parent=img.parentElement;
+    if(parent&&!parent.querySelector('.design-bubble-img-fallback')){
+      const fb=document.createElement('div');
+      fb.className='design-bubble-no-image design-bubble-img-fallback';
+      fb.innerHTML='<span style="font-size:28px;">🎨</span><span style="font-weight:700;color:var(--muted);font-size:12px;">تعذر تحميل الصورة مؤقتًا — انقر للتكبير</span>';
+      parent.appendChild(fb);
+    }
+  }
+}
+
 function openRevisionDialog(versionId,optionId,targetDesc){
   let mediaRecorder=null,audioChunks=[],audioBlob=null,timerInterval=null,secondsElapsed=0,previewAudio=null,previewUrl=null;
   const maxDuration=120;
@@ -850,39 +1073,38 @@ function openRevisionDialog(versionId,optionId,targetDesc){
         <div id="rev-voice-live" class="revision-voice-live hidden">
           <span class="voice-pulse-dot"></span>
           <span class="rev-voice-timer" id="rev-timer">00:00</span>
-          <span class="muted" style="font-size:12px;">جارٍ التسجيل...</span>
-          <button type="button" class="btn btn-sm btn-danger" id="rev-btn-stop">⏹️ إيقاف</button>
+          <span class="muted" style="font-size:12px;">(الحد الأقصى دقيقتان)</span>
+          <button type="button" class="btn-voice-stop" id="rev-btn-stop">إيقاف وإنهاء</button>
+          <button type="button" class="btn-voice-cancel" id="rev-btn-cancel">إلغاء</button>
         </div>
         <div id="rev-voice-preview" class="revision-voice-preview hidden">
-          <button type="button" class="voice-play-btn" id="rev-btn-play" aria-label="تشغيل المعاينة">
-            <svg class="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-            <svg class="icon-pause hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          </button>
-          <div class="rev-preview-track-wrap">
-            <div class="rev-preview-track"><div class="rev-preview-fill" id="rev-fill" style="width:0%"></div></div>
-            <span class="rev-preview-time" id="rev-time-label">0:00 / 0:00</span>
+          <div class="voice-preview-card">
+            <button type="button" class="voice-preview-play-btn" id="rev-prev-play" aria-label="تشغيل التسجيل">
+              <svg id="rev-icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              <svg id="rev-icon-pause" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <span class="voice-preview-dur" id="rev-prev-dur">00:00</span>
+            <button type="button" class="voice-preview-del" id="rev-prev-del" title="حذف وإعادة التسجيل">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>إعادة التسجيل</span>
+            </button>
           </div>
-          <button type="button" class="btn btn-sm btn-soft" id="rev-btn-rerecord" title="إعادة التسجيل">🔄 إعادة</button>
-          <button type="button" class="btn btn-sm btn-danger" id="rev-btn-delete" title="حذف التسجيل">🗑️ حذف</button>
         </div>
       </div>
     </div>
-  `,async ()=>{
-    const textVal=($('#rev-modal-text')?.value||'').trim();
-    if(!textVal&&!audioBlob){
-      throw Error('يرجى كتابة ملاحظات التعديل أو تسجيل تعليق صوتي');
-    }
-    if(textVal&&textVal.length<3&&!audioBlob){
-      throw Error('ملاحظات التعديل يجب أن تكون 3 أحرف على الأقل');
+  `,async f=>{
+    const text=(f.get('request')||'').trim();
+    if(!text&&!audioBlob){
+      throw Error('يرجى كتابة ملاحظات التعديل أو تسجيل تعليق صوتي توضيحي');
     }
     const p=state.portalData.project;
     const fd=new FormData();
     fd.append('version_id',versionId);
     if(optionId)fd.append('option_id',optionId);
-    if(textVal)fd.append('request',textVal);
+    if(text)fd.append('request',text);
     if(audioBlob){
-      fd.append('audio',audioBlob,'revision-voice.webm');
-      fd.append('duration',Math.max(1,secondsElapsed));
+      fd.append('audio',audioBlob,'voice-revision.webm');
+      fd.append('duration',String(secondsElapsed));
     }
     const res=await fetch('/api/portal/'+p.id+'/revisions',{
       method:'POST',
@@ -891,6 +1113,14 @@ function openRevisionDialog(versionId,optionId,targetDesc){
     });
     if(!res.ok){
       const errData=await res.json().catch(()=>({}));
+      if(res.status===409){
+        const fresh=await api('/api/portal/'+p.id).catch(()=>null);
+        if(fresh){
+          state.portalData=fresh;
+          await loadPortalMessages();
+        }
+        throw Error(errData.error||'تم تقديم طلب تعديل أو اعتماد هذا التصميم مسبقاً');
+      }
       throw Error(errData.error||'تعذر إرسال طلب التعديل');
     }
     toast('تم إرسال طلب التعديل بنجاح');
@@ -903,124 +1133,82 @@ function openRevisionDialog(versionId,optionId,targetDesc){
     await loadPortalMessages();
   },'إرسال طلب التعديل');
 
-  setTimeout(()=>{
-    const startBtn=$('#rev-btn-start'),stopBtn=$('#rev-btn-stop'),playBtn=$('#rev-btn-play'),rerecordBtn=$('#rev-btn-rerecord'),delBtn=$('#rev-btn-delete');
-    const ctrls=$('#rev-voice-ctrls'),live=$('#rev-voice-live'),prev=$('#rev-voice-preview');
-    const timerEl=$('#rev-timer'),fillEl=$('#rev-fill'),timeLbl=$('#rev-time-label');
-    if(!startBtn)return;
+  const startBtn=document.querySelector('#rev-btn-start'),stopBtn=document.querySelector('#rev-btn-stop'),cancelBtn=document.querySelector('#rev-btn-cancel'),liveBox=document.querySelector('#rev-voice-live'),ctrlsBox=document.querySelector('#rev-voice-ctrls'),prevBox=document.querySelector('#rev-voice-preview'),timerEl=document.querySelector('#rev-timer'),prevDurEl=document.querySelector('#rev-prev-dur'),prevPlayBtn=document.querySelector('#rev-prev-play'),prevDelBtn=document.querySelector('#rev-prev-del'),iconPlay=document.querySelector('#rev-icon-play'),iconPause=document.querySelector('#rev-icon-pause');
 
-    startBtn.onclick=async()=>{
-      if(!navigator.mediaDevices?.getUserMedia){
-        toast('المتصفح الحالي لا يدعم تسجيل الصوت','error');
-        return;
-      }
-      let mime='';
-      const candidates=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus','audio/aac'];
-      for(const c of candidates){
-        if(window.MediaRecorder&&MediaRecorder.isTypeSupported(c)){mime=c;break;}
-      }
-      let stream;
-      try{
-        stream=await navigator.mediaDevices.getUserMedia({audio:true});
-      }catch(err){
-        toast('تعذر الوصول للميكروفون: '+err.message,'error');
-        return;
-      }
-      audioChunks=[];
-      try{
-        mediaRecorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
-      }catch(e){
-        mediaRecorder=new MediaRecorder(stream);
-      }
-      mediaRecorder.ondataavailable=e=>{
-        if(e.data&&e.data.size>0)audioChunks.push(e.data);
-      };
-      mediaRecorder.onstop=()=>{
-        stream.getTracks().forEach(t=>t.stop());
-        if(secondsElapsed<1){
-          toast('التسجيل قصير جداً');
-          resetVoiceUI();
-          return;
-        }
-        audioBlob=new Blob(audioChunks,{type:mime||'audio/webm'});
-        showPreviewUI();
-      };
-      secondsElapsed=0;
-      ctrls.classList.add('hidden');
-      prev.classList.add('hidden');
-      live.classList.remove('hidden');
-      timerInterval=setInterval(()=>{
-        secondsElapsed++;
-        const m=Math.floor(secondsElapsed/60),s=secondsElapsed%60;
-        if(timerEl)timerEl.textContent=`${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
-        if(secondsElapsed>=maxDuration){
-          stopBtn.click();
-        }
-      },1000);
-      mediaRecorder.start(250);
+  function resetVoiceUI(){
+    ctrlsBox.classList.remove('hidden');liveBox.classList.add('hidden');prevBox.classList.add('hidden');
+  }
+
+  function showPreviewUI(){
+    ctrlsBox.classList.add('hidden');liveBox.classList.add('hidden');prevBox.classList.remove('hidden');
+    prevDurEl.textContent=formatAudioTime(secondsElapsed);
+    previewUrl=URL.createObjectURL(audioBlob);
+    previewAudio=new Audio(previewUrl);
+    previewAudio.onended=()=>{
+      iconPlay.classList.remove('hidden');iconPause.classList.add('hidden');
     };
+    prevPlayBtn.onclick=()=>{
+      if(previewAudio.paused){
+        previewAudio.play();iconPlay.classList.add('hidden');iconPause.classList.remove('hidden');
+      }else{
+        previewAudio.pause();iconPlay.classList.remove('hidden');iconPause.classList.add('hidden');
+      }
+    };
+  }
 
+  if(startBtn){
+    startBtn.onclick=async()=>{
+      try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+        audioChunks=[];secondsElapsed=0;timerEl.textContent='00:00';
+        mediaRecorder=new MediaRecorder(stream,{mimeType:MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/ogg'});
+        mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)audioChunks.push(e.data);};
+        mediaRecorder.onstop=()=>{
+          stream.getTracks().forEach(t=>t.stop());
+          if(audioChunks.length>0){
+            audioBlob=new Blob(audioChunks,{type:mediaRecorder.mimeType||'audio/webm'});
+            showPreviewUI();
+          }else{
+            resetVoiceUI();
+          }
+        };
+        mediaRecorder.start(250);
+        ctrlsBox.classList.add('hidden');liveBox.classList.remove('hidden');
+        timerInterval=setInterval(()=>{
+          secondsElapsed++;timerEl.textContent=formatAudioTime(secondsElapsed);
+          if(secondsElapsed>=maxDuration&&mediaRecorder&&mediaRecorder.state==='recording'){
+            clearInterval(timerInterval);timerInterval=null;mediaRecorder.stop();
+          }
+        },1000);
+      }catch(err){
+        console.error('Microphone access error',err);toast('تعذر الوصول إلى الميكروفون','error');
+      }
+    };
+  }
+
+  if(stopBtn){
     stopBtn.onclick=()=>{
       if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
-      if(mediaRecorder&&mediaRecorder.state!=='inactive'){
-        mediaRecorder.stop();
+      if(mediaRecorder&&mediaRecorder.state==='recording')mediaRecorder.stop();
+    };
+  }
+
+  if(cancelBtn){
+    cancelBtn.onclick=()=>{
+      if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+      if(mediaRecorder&&mediaRecorder.state==='recording'){
+        mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+        mediaRecorder=null;
       }
+      cleanupRecording();resetVoiceUI();
     };
+  }
 
-    function resetVoiceUI(){
-      cleanupRecording();
-      live.classList.add('hidden');
-      prev.classList.add('hidden');
-      ctrls.classList.remove('hidden');
-    }
-
-    function showPreviewUI(){
-      live.classList.add('hidden');
-      ctrls.classList.add('hidden');
-      prev.classList.remove('hidden');
-      previewUrl=URL.createObjectURL(audioBlob);
-      previewAudio=new Audio(previewUrl);
-      const durStr=formatAudioTime(secondsElapsed);
-      timeLbl.textContent=`0:00 / ${durStr}`;
-
-      const iconPlay=playBtn.querySelector('.icon-play'),iconPause=playBtn.querySelector('.icon-pause');
-      playBtn.onclick=()=>{
-        if(previewAudio.paused){
-          if(window._currentPlayingAudio&&window._currentPlayingAudio!==previewAudio)window._currentPlayingAudio.pause();
-          window._currentPlayingAudio=previewAudio;
-          previewAudio.play();
-          iconPlay.classList.add('hidden');
-          iconPause.classList.remove('hidden');
-        }else{
-          previewAudio.pause();
-          iconPlay.classList.remove('hidden');
-          iconPause.classList.add('hidden');
-        }
-      };
-      previewAudio.ontimeupdate=()=>{
-        const total=previewAudio.duration&&!isNaN(previewAudio.duration)?previewAudio.duration:secondsElapsed;
-        const cur=previewAudio.currentTime||0;
-        const pct=total>0?Math.min(100,(cur/total)*100):0;
-        fillEl.style.width=pct+'%';
-        timeLbl.textContent=`${formatAudioTime(cur)} / ${formatAudioTime(total)}`;
-      };
-      previewAudio.onended=()=>{
-        iconPlay.classList.remove('hidden');
-        iconPause.classList.add('hidden');
-        fillEl.style.width='0%';
-        timeLbl.textContent=`0:00 / ${durStr}`;
-      };
-    }
-
-    rerecordBtn.onclick=()=>{
-      resetVoiceUI();
-      startBtn.click();
+  if(prevDelBtn){
+    prevDelBtn.onclick=()=>{
+      cleanupRecording();resetVoiceUI();
     };
-
-    delBtn.onclick=()=>{
-      resetVoiceUI();
-    };
-  },50);
+  }
 }
 
 function openApproveDialog(versionId,optionId,targetDesc){
@@ -1043,6 +1231,14 @@ function openApproveDialog(versionId,optionId,targetDesc){
     });
     if(!res.ok){
       const errData=await res.json().catch(()=>({}));
+      if(res.status===409){
+        const fresh=await api('/api/portal/'+p.id).catch(()=>null);
+        if(fresh){
+          state.portalData=fresh;
+          await loadPortalMessages();
+        }
+        throw Error(errData.error||'تم اعتماد أو تعديل هذا التصميم مسبقاً');
+      }
       throw Error(errData.error||'تعذر اعتماد التصميم');
     }
     toast('تم اعتماد التصميم بنجاح');
@@ -1054,6 +1250,7 @@ function openApproveDialog(versionId,optionId,targetDesc){
     await loadPortalMessages();
   },'نعم، اعتماد التصميم نهائيًا');
 }
+
 async function loadPortalMessages(){
   const container=$('#messages');
   if(!container)return;
@@ -1075,11 +1272,47 @@ async function loadPortalMessages(){
       const optFiles=opt.files||[];
       const imgFile=optFiles.find(f=>f.mime&&f.mime.startsWith('image/'))||optFiles[0];
       const imgUrl=imgFile?`/api/portal/${p.id}/files/${imgFile.id}`:'';
-      const isApproved=opt.status==='APPROVED'||(v.status==='APPROVED'&&(String(v.approved_option_id)===String(opt.id)||!v.approved_option_id));
-      const revObj=revisions.find(r=>r.version_id===v.id&&(String(r.option_id)===String(opt.id)||!r.option_id));
-      const hasRev=v.status==='REVISION_REQUESTED'||!!revObj;
       const isLatest=latestVer&&latestVer.id===v.id;
+      const isApproved=opt.status==='APPROVED'||(v.status==='APPROVED'&&(String(v.approved_option_id)===String(opt.id)||!v.approved_option_id));
+      const revForThisOpt=revisions.find(r=>r.version_id===v.id&&String(r.option_id)===String(opt.id));
+      const revForVersion=revisions.find(r=>r.version_id===v.id&&!r.option_id);
+      const revObj=revForThisOpt||(opts.length===1?revForVersion:null);
+      const hasRev=isLatest&&(!!revObj||(v.status==='REVISION_REQUESTED'&&opts.length===1));
+      const isSuperseded=!isLatest&&!isApproved;
+      const latestVersionNumber=latestVer?latestVer.number:v.number;
       const canAct=isLatest&&v.status==='PENDING'&&!isApproved&&!hasRev&&p.status!=='COMPLETED';
+
+      // Trace lineage: previous version revision info (Phase 3: Option-Strict)
+      let revisedFrom=null;
+      if(v.number>1){
+        const prevVer=versions.find(prev=>prev.number===v.number-1);
+        if(prevVer){
+          const prevOptNameFormatted = formatOptionName(opt.name);
+          const prevRev = revisions.find(r => {
+            if (r.version_id !== prevVer.id) return false;
+            if (r.option_id) {
+              if (r.option_name && formatOptionName(r.option_name) === prevOptNameFormatted) return true;
+              const matchedPrevOpt = (prevVer.options || []).find(po => String(po.id) === String(r.option_id));
+              if (matchedPrevOpt && formatOptionName(matchedPrevOpt.name) === prevOptNameFormatted) return true;
+              return false;
+            }
+            return (prevVer.options || []).length === 1;
+          });
+
+          if(prevRev){
+            const matchedPrevOpt = (prevVer.options || []).find(po => String(po.id) === String(prevRev.option_id));
+            const sourceOptionId = prevRev.option_id || (matchedPrevOpt ? matchedPrevOpt.id : null);
+            const prevOptName = prevRev.option_name ? formatOptionName(prevRev.option_name) : (matchedPrevOpt ? formatOptionName(matchedPrevOpt.name) : formatOptionName(opt.name));
+            revisedFrom={
+              optionName: prevOptName,
+              versionNumber: prevVer.number,
+              versionId: prevVer.id,
+              optionId: sourceOptionId || null,
+              revisionId: prevRev.id
+            };
+          }
+        }
+      }
 
       designItems.push({
         isDesignBubble:true,
@@ -1091,7 +1324,10 @@ async function loadPortalMessages(){
         hasRevision:hasRev,
         revisionObj:revObj||null,
         isLatest:isLatest,
-        canAct:canAct
+        isSuperseded:isSuperseded,
+        latestVersionNumber:latestVersionNumber,
+        canAct:canAct,
+        revisedFrom:revisedFrom
       });
     });
   });
@@ -1131,9 +1367,20 @@ function appendDesignBubble(dItem){
   el.innerHTML=`
     <div class="message-sender-name">المصمم · تصميم مقترح</div>
     <div class="message-design-card">
+      <div class="design-bubble-card-header">
+        <div class="design-bubble-kicker">
+          <span class="design-bubble-kicker-icon">🎨</span>
+          <span class="design-bubble-kicker-text">التصميم</span>
+        </div>
+        <div class="design-bubble-identity">
+          <span class="design-bubble-opt-name">${esc(formatOptionName(dItem.option.name))}</span>
+          <span class="design-bubble-dot">·</span>
+          <span class="design-bubble-ver-num">الإصدار V${dItem.version.number}</span>
+        </div>
+      </div>
       <div class="design-bubble-image-wrap" data-img-url="${esc(dItem.imgUrl)}" data-img-name="${esc(optTitle)}">
         ${dItem.imgUrl?`
-          <img src="${esc(dItem.imgUrl)}" alt="${esc(optTitle)}" class="message-chat-image design-bubble-thumb" loading="lazy"/>
+          <img src="${esc(dItem.imgUrl)}" alt="${esc(optTitle)}" class="message-chat-image design-bubble-thumb" loading="lazy" onerror="handleImageLoadRetry(this)"/>
           <div class="design-bubble-overlay-hint">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
             <span>انقر لتكبير التصميم</span>
@@ -1147,29 +1394,65 @@ function appendDesignBubble(dItem){
       </div>
       <div class="design-bubble-details">
         <div class="design-bubble-title-row">
-          <strong class="design-bubble-option-name">${esc(formatOptionName(dItem.option.name))}</strong>
+          <strong class="design-bubble-option-name">${esc(formatOptionName(dItem.option.name))} · الإصدار V${dItem.version.number}</strong>
           <span class="version-pill ${dItem.isLatest?'':'is-prev'}">الإصدار V${dItem.version.number}</span>
         </div>
-        <div class="design-bubble-status-badge">
-          ${dItem.isApproved?'<span class="status status-approved"><i></i> معتمد نهائيًا ✅</span>':(dItem.hasRevision?'<span class="status status-review"><i></i> بانتظار التعديل 🔄</span>':'<span class="status status-waiting"><i></i> بانتظار المراجعة</span>')}
-        </div>
-        ${dItem.canAct?`
-          <div class="design-bubble-actions">
-            <button type="button" class="btn-design-action btn-design-rev" onclick="openRevisionDialog(${dItem.version.id},${dItem.option.id},'${esc(optTitle)}')">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-              <span>طلب تعديل</span>
-            </button>
-            <button type="button" class="btn-design-action btn-design-app" onclick="openApproveDialog(${dItem.version.id},${dItem.option.id},'${esc(optTitle)}')">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>اعتماد التصميم</span>
-            </button>
-          </div>
-        `:(dItem.hasRevision?`
-          <div class="design-bubble-revision-notice">
-            <div class="revision-notice-header">
-              <span class="revision-notice-badge">طلب تعديل ✓</span>
-              <span class="revision-notice-status">الحالة: بانتظار التعديل</span>
+
+        ${dItem.revisedFrom?`
+          <div class="design-bubble-revised-notice" onclick="scrollToDesignMessage(${dItem.revisedFrom.versionId}, ${dItem.revisedFrom.optionId||'null'})" style="cursor:pointer;" title="انقر للانتقال إلى الإصدار السابق في المحادثة" data-lineage="نسخة معدلة بناءً على: طلب تعديل على ${esc(dItem.revisedFrom.optionName)} · الإصدار V${dItem.revisedFrom.versionNumber}">
+            <span class="revised-notice-icon">🔄</span>
+            <div class="revised-notice-body">
+              <span class="revised-notice-label">🔄 مبني على تعديل سابق</span>
+              <span class="revised-notice-target">${esc(dItem.revisedFrom.optionName)} · الإصدار V${dItem.revisedFrom.versionNumber}</span>
+              <!-- نسخة معدلة بناءً على: ${esc(dItem.revisedFrom.optionName)} · الإصدار V${dItem.revisedFrom.versionNumber} -->
             </div>
+          </div>
+        `:''}
+
+        <div class="design-bubble-action-area">
+          ${dItem.canAct?`
+            <div class="design-bubble-status-badge">
+              <div class="design-status-pill status-waiting">
+                <span class="status-indicator-dot">🟡</span>
+                <span class="status-pill-text">بانتظار مراجعة العميل</span>
+              </div>
+            </div>
+            <div class="design-action-context-msg">هذا الإصدار بانتظار مراجعتك</div>
+            <div class="design-bubble-actions">
+              <button type="button" class="btn-design-action btn-design-rev" onclick="openRevisionDialog(${dItem.version.id},${dItem.option.id},'${esc(optTitle)}')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                <span>طلب تعديل</span>
+              </button>
+              <button type="button" class="btn-design-action btn-design-app" onclick="openApproveDialog(${dItem.version.id},${dItem.option.id},'${esc(optTitle)}')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>اعتماد التصميم</span>
+              </button>
+            </div>
+          `:(dItem.isApproved?`
+            <div class="design-bubble-status-badge">
+              <div class="design-status-pill status-approved">
+                <span class="status-indicator-dot">🟢</span>
+                <span class="status-pill-text">تم اعتماد التصميم</span>
+              </div>
+            </div>
+            <div class="design-action-context-sub">اعتمد العميل ${esc(formatOptionName(dItem.option.name))} · الإصدار V${dItem.version.number}</div>
+            ${dItem.version.approved_at?`<div class="approved-notice-meta" style="margin-top:4px;"><time>${fmt(dItem.version.approved_at)}</time></div>`:''}
+          `:(dItem.isSuperseded?`
+            <div class="design-bubble-status-badge">
+              <div class="design-status-pill status-superseded">
+                <span class="status-indicator-dot">⚪</span>
+                <span class="status-pill-text">مستبدل بإصدار أحدث</span>
+              </div>
+            </div>
+            <div class="design-action-context-sub">الإصدار الحالي: V${dItem.latestVersionNumber}</div>
+          `:(dItem.hasRevision?`
+            <div class="design-bubble-status-badge">
+              <div class="design-status-pill status-revision">
+                <span class="status-indicator-dot">🔴</span>
+                <span class="status-pill-text">طلب تعديل — بانتظار المصمم</span>
+              </div>
+            </div>
+            <div class="design-action-context-sub">تم إرسال طلب التعديل على ${esc(formatOptionName(dItem.option.name))} · الإصدار V${dItem.version.number}</div>
             ${dItem.revisionObj?.request?`<div class="revision-notice-text">«${esc(dItem.revisionObj.request)}»</div>`:''}
             ${dItem.revisionObj?.file_url?`
               <div class="revision-notice-voice">
@@ -1192,24 +1475,15 @@ function appendDesignBubble(dItem){
                 </div>
               </div>
             `:''}
-            <div class="revision-notice-meta">
-              <span>${esc(formatOptionName(dItem.option.name))}</span> • 
-              <span>الإصدار V${dItem.version.number}</span>
-              ${dItem.revisionObj?.created_at?` • <time>${fmt(dItem.revisionObj.created_at)}</time>`:''}
+          `:`
+            <div class="design-bubble-status-badge">
+              <div class="design-status-pill status-waiting">
+                <span class="status-indicator-dot">🟡</span>
+                <span class="status-pill-text">بانتظار مراجعة العميل</span>
+              </div>
             </div>
-          </div>
-        `:(dItem.isApproved?`
-          <div class="design-bubble-approved-notice">
-            <div class="approved-notice-header">
-              <span class="approved-notice-badge">تم اعتماد التصميم ✓</span>
-            </div>
-            <div class="approved-notice-meta">
-              <span>${esc(formatOptionName(dItem.option.name))}</span> • 
-              <span>الإصدار المعتمد: V${dItem.version.number}</span>
-              ${dItem.version.approved_at?` • <time>${fmt(dItem.version.approved_at)}</time>`:''}
-            </div>
-          </div>
-        `:''))}
+          `)))}
+        </div>
       </div>
     </div>
     <div class="message-meta">
@@ -1243,14 +1517,13 @@ function appendDesignBubble(dItem){
         const pct=total>0?Math.min(100,(cur/total)*100):0;
         if(fill)fill.style.width=pct+'%';
         if(thumb)thumb.style.left=pct+'%';
-        if(timeText)timeText.textContent=`${formatAudioTime(cur)} / ${formatAudioTime(total)}`;
+        if(timeText)timeText.textContent=formatAudioTime(cur)+' / '+formatAudioTime(total);
       };
       audioEl.onended=()=>{
-        iconPlay.classList.remove('hidden');
-        iconPause.classList.add('hidden');
+        iconPlay.classList.remove('hidden');iconPause.classList.add('hidden');
         if(fill)fill.style.width='0%';
         if(thumb)thumb.style.left='0%';
-        if(timeText)timeText.textContent=`0:00 / ${formatAudioTime(audioEl.duration||durTotal)}`;
+        if(timeText)timeText.textContent='0:00 / '+formatAudioTime(audioEl.duration||durTotal);
       };
       if(seekBar){
         seekBar.onclick=e=>{
@@ -1265,6 +1538,7 @@ function appendDesignBubble(dItem){
 
   container.append(el);
 }
+
 async function clientPortalRefresh(){
   const d=await api('/api/portal/'+state.portalData.project.id);
   state.portalData=d;
